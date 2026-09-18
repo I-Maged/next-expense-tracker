@@ -30,14 +30,22 @@ Never rely on general training knowledge alone for library APIs — they change 
 
 **Check first:** Check AGENTS.md for an installed Prisma skill. If a Prisma MCP server is configured — use it.
 
-### Singleton
+### Singleton (Prisma 7 — driver adapter required)
 
 ```typescript
 // lib/prisma.ts
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
-export const prisma = globalForPrisma.prisma ?? new PrismaClient();
+
+function createPrismaClient(): PrismaClient {
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) throw new Error("DATABASE_URL is not set");
+  return new PrismaClient({ adapter: new PrismaPg({ connectionString: databaseUrl }) });
+}
+
+export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 ```
 
@@ -52,6 +60,8 @@ npx prisma studio
 ```
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/expense_tracker"
 ```
+
+Prisma 7 notes: datasource URL lives in `prisma.config.ts` (loaded via `process.loadEnvFile()` — Prisma does not auto-load `.env`); the schema keeps a provider-only `datasource db { provider = "postgresql" }` block (without it Decimal fails as "Default connector"); generator is `prisma-client-js` so output stays the default `@prisma/client`.
 
 ### Query patterns
 
@@ -150,15 +160,15 @@ const session = await auth.api.getSession({ headers: await headers() });
 if (!session) redirect("/login");
 ```
 
-### Middleware (cookie presence only)
+### Proxy guard (cookie presence only — Next 16 renamed `middleware.ts` to `proxy.ts`)
 
 ```typescript
-// middleware.ts
+// proxy.ts
 import { NextRequest, NextResponse } from "next/server";
 
 const PROTECTED = ["/dashboard", "/transactions", "/budgets", "/settings"];
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const hasSession = req.cookies.has("better-auth.session_token");
   const isProtected = PROTECTED.some((p) => req.nextUrl.pathname.startsWith(p));
   if (isProtected && !hasSession) return NextResponse.redirect(new URL("/login", req.url));
@@ -172,10 +182,10 @@ export function middleware(req: NextRequest) {
 ### Auth schema
 
 ```bash
-bunx auth generate
+npx auth@latest generate
 ```
 
-Generates `User`, `Session`, `Account`, `Verification` models. Never hand-write or hand-edit them — re-run the CLI after Better-Auth upgrades.
+Generates `User`, `Session`, `Account`, `Verification` models (singular tables `user`, `session`, `account`, `verification` by default). 03 hand-wrote them from the installed better-auth expected schema instead (developer decision) — re-run the CLI after Better-Auth upgrades and merge carefully (app models reference `User`).
 
 **Rules:**
 

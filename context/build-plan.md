@@ -46,7 +46,7 @@ Better-Auth authentication — email/password + Google + GitHub OAuth, session c
 - `lib/auth-client.ts` — browser client
 - `app/api/auth/[...all]/route.ts` — catch-all handler (only API route)
 - Session cookie httpOnly, persisted in `sessions` table
-- `middleware.ts` — cookie-presence guard for /dashboard, /transactions, /budgets, /settings; redirect logged-in users away from /login, /signup
+- `proxy.ts` — cookie-presence guard for /dashboard, /transactions, /budgets, /settings; redirect logged-in users away from /login, /signup
 - After login/signup → redirect to /dashboard
 - Sign out → redirect to /
 
@@ -55,6 +55,8 @@ Better-Auth authentication — email/password + Google + GitHub OAuth, session c
 ### 03 Database + Docker
 
 All Prisma models and local Postgres ready before any app data is written.
+
+> Status 2026-09-18: **Done, DB-only** (developer decision — auth wiring stays separate). Done: `docker-compose.yml` (validated, daemon start deferred), `prisma.config.ts`, `prisma/schema.prisma` (singular auth tables per better-auth default + `categories`/`transactions`/`budgets`, migrated), `lib/prisma.ts` (PrismaPg adapter singleton, live-verified), `lib/validations.ts` + `lib/utils.ts` extensions (TDD, 11 new tests). Prisma 7 notes: provider-only `datasource db` block, `process.loadEnvFile()` in config, `prisma-client-js` generator. Still pending (auth wiring step): `lib/auth.ts`, `app/api/auth/[...all]/route.ts`, homepage session-aware CTAs, live OAuth verification (Google/GitHub secrets not yet in `.env`).
 
 **Logic:**
 
