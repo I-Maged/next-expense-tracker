@@ -1,6 +1,6 @@
 # UI Tokens
 
-Design tokens for ExpenseTracker. Same visual system as reference — purple accent, white cards, Inter. Use these exact values throughout the codebase — never hardcode colors or use raw Tailwind color classes in components.
+Design tokens for ExpenseTracker. Same visual system as reference — purple accent, white cards, Google Sans Flex. Use these exact values throughout the codebase — never hardcode colors or use raw Tailwind color classes in components.
 
 ---
 
@@ -36,7 +36,7 @@ className="bg-purple-500 text-gray-600"
 
 @theme {
   /* Font */
-  --font-sans: "Inter", sans-serif;
+  --font-sans: "Google Sans Flex", sans-serif;
 
   /* Page and surface backgrounds */
   --color-background: #f6f7fb;
@@ -150,40 +150,40 @@ Used for: primary buttons, active nav items, focus rings, chart highlights
 
 ### Amount Colors
 
-| Type    | Token             | Usage                          |
-| ------- | ----------------- | ------------------------------ |
-| Income  | `text-success`    | +$ amounts, income stat        |
-| Expense | `text-text-primary` | -$ amounts (default body text) |
-| Over-budget | `text-error`  | Over-limit figures, alerts     |
+| Type        | Token               | Usage                          |
+| ----------- | ------------------- | ------------------------------ |
+| Income      | `text-success`      | +$ amounts, income stat        |
+| Expense     | `text-text-primary` | -$ amounts (default body text) |
+| Over-budget | `text-error`        | Over-limit figures, alerts     |
 
 Amounts are right-aligned in tables. Always include sign prefix (`+`/`-`) plus formatted currency.
 
 ### Category Badges
 
-| Element      | Style                                              |
-| ------------ | -------------------------------------------------- |
-| Dot          | 8px circle, inline category `color` hex            |
-| Badge pill   | `bg-surface-secondary` + `text-text-secondary`     |
+| Element    | Style                                          |
+| ---------- | ---------------------------------------------- |
+| Dot        | 8px circle, inline category `color` hex        |
+| Badge pill | `bg-surface-secondary` + `text-text-secondary` |
 
 Category dot uses the stored category color. Badge chrome stays neutral.
 
 ### Budget Progress
 
-| State         | Bar fill        | Text                  |
-| ------------- | --------------- | --------------------- |
-| Under 80%     | `bg-success`    | `text-text-secondary` |
-| 80–100%       | `bg-warning`    | `text-warning`        |
-| Over 100%     | `bg-error`      | `text-error`          |
+| State     | Bar fill     | Text                  |
+| --------- | ------------ | --------------------- |
+| Under 80% | `bg-success` | `text-text-secondary` |
+| 80–100%   | `bg-warning` | `text-warning`        |
+| Over 100% | `bg-error`   | `text-error`          |
 
 Track is always `bg-border-light`, height 8px for budgets (4px for table mini-bars).
 
 ### Status Badges
 
-| Status      | Background            | Text                      |
-| ----------- | --------------------- | ------------------------- |
-| Income      | `bg-success-lightest` | `text-success-foreground` |
-| Expense     | `bg-surface-secondary`| `text-text-secondary`     |
-| Over budget | `bg-error` (soft via opacity) | `text-error`      |
+| Status      | Background                    | Text                      |
+| ----------- | ----------------------------- | ------------------------- |
+| Income      | `bg-success-lightest`         | `text-success-foreground` |
+| Expense     | `bg-surface-secondary`        | `text-text-secondary`     |
+| Over budget | `bg-error` (soft via opacity) | `text-error`              |
 
 ---
 
@@ -203,7 +203,7 @@ Track is always `bg-border-light`, height 8px for budgets (4px for table mini-ba
 | Chart axis labels    | 12px | 400    | 15px        | `#9CA3AF`             |
 | Stat subtitle        | 12px | 400    | 16px        | `text-text-muted`     |
 
-Font family: **Inter** — import from Google Fonts or use next/font/google.
+Font family: **Google Sans Flex** — import from Google Fonts or use next/font/google.
 
 ---
 
@@ -319,12 +319,12 @@ font-weight: 500
 
 ### Dashboard Chart Colors
 
-| Chart                      | Color                                                           |
-| -------------------------- | --------------------------------------------------------------- |
-| Spending by Category (bars)| `#7C5CFC` primary, category dots for legend                     |
-| Income vs Expense (lines)  | Income `#10B981`, Expense `#7C5CFC`, 3px width                  |
-| Chart grid lines           | `1px dashed #E7EAF3`                                            |
-| Chart axis labels          | `#9CA3AF`, 12px                                                 |
+| Chart                       | Color                                          |
+| --------------------------- | ---------------------------------------------- |
+| Spending by Category (bars) | `#7C5CFC` primary, category dots for legend    |
+| Income vs Expense (lines)   | Income `#10B981`, Expense `#7C5CFC`, 3px width |
+| Chart grid lines            | `1px dashed #E7EAF3`                           |
+| Chart axis labels           | `#9CA3AF`, 12px                                |
 
 ### Logo
 
@@ -339,7 +339,7 @@ size: 36x36px
 ## Invariants
 
 - Never use hex values directly in components — always use CSS variables via Tailwind tokens (exception: category dot color comes from DB, rendered via inline style)
-- Font is Inter — always import via next/font/google, never use a fallback system font
+- Font is Google Sans Flex — always import via next/font/google, never use a fallback system font
 - Never use raw Tailwind color classes like `bg-purple-500` or `text-gray-600` — use project tokens only
 - `--accent` (#7C5CFC) is the only purple — never use Tailwind's built-in purple scale
 - Amount colors follow Amount Colors table — never invent new money colors

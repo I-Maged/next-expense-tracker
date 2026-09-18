@@ -51,8 +51,11 @@ Update this file after every completed feature. Any AI agent reading this should
 - 2026-09-18: Default categories seeded per user on signup: Food, Transport, Rent, Utilities, Shopping, Health, Entertainment, Other.
 - 2026-09-18: Charts = recharts, Prisma aggregates only. No PostHog or analytics vendor.
 - 2026-09-18: Postgres via local Docker (`docker-compose.yml`). Migrations via `prisma migrate dev`.
-- 2026-09-18: Visual system reused 1:1 from reference (purple `#7C5CFC`, white cards, Inter, Tailwind v4 `@theme`).
+- 2026-09-18: Visual system reused 1:1 from reference (purple `#7C5CFC`, white cards, Google Sans Flex, Tailwind v4 `@theme`).
 - 2026-09-18: Only API route is `app/api/auth/[...all]`. All app mutations are Server Actions.
+- 2026-09-18: globals.css = full `@theme` tokens verbatim from ui-tokens.md + base body/input defaults + `.card` component class. No `tailwind.config.*` (v4 CSS-first).
+- 2026-09-18: Font = `Google_Sans_Flex` via `next/font/google` (`variable: --font-google-sans-flex`, latin subset), wired into `--font-sans`. Removed runtime Google Fonts `@import`. Build warns "no font override values" — benign, fallback chain covers it.
+- 2026-09-18: Dark mode = CSS-variable overrides (accent/success/warning/error hues unchanged, surfaces + text + light-tints adapted), auto via `prefers-color-scheme` + `.dark` class hook (`@custom-variant`) for a future toggle. No `.light` escape hatch yet.
 
 _Add decisions here as they are made during implementation._
 

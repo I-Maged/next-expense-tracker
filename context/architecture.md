@@ -2,16 +2,16 @@
 
 ## Stack
 
-| Layer            | Tool                          | Purpose                              |
-| ---------------- | ----------------------------- | ------------------------------------ |
-| Framework        | Next.js 16 (App Router)       | Full stack framework                 |
-| Language         | TypeScript strict             | Throughout                           |
-| ORM              | Prisma                        | DB access + migrations               |
-| Database         | Postgres (local Docker)       | All app data                         |
-| Auth             | Better-Auth                   | Email/password + OAuth, sessions     |
-| Charts           | recharts                      | Dashboard reports                    |
-| Styling          | Tailwind CSS v4 + shadcn/ui   | UI components and styling            |
-| Validation       | zod                           | Form + Server Action validation      |
+| Layer      | Tool                        | Purpose                          |
+| ---------- | --------------------------- | -------------------------------- |
+| Framework  | Next.js 16 (App Router)     | Full stack framework             |
+| Language   | TypeScript strict           | Throughout                       |
+| ORM        | Prisma                      | DB access + migrations           |
+| Database   | Postgres (local Docker)     | All app data                     |
+| Auth       | Better-Auth                 | Email/password + OAuth, sessions |
+| Charts     | recharts                    | Dashboard reports                |
+| Styling    | Tailwind CSS v4 + shadcn/ui | UI components and styling        |
+| Validation | zod                         | Form + Server Action validation  |
 
 No InsForge. No Adzuna. No PostHog. No AI/browser/PDF vendors.
 
@@ -36,7 +36,7 @@ No InsForge. No Adzuna. No PostHog. No AI/browser/PDF vendors.
 │   ├── build-plan.md
 │   └── progress-tracker.md
 ├── app/
-│   ├── layout.tsx                      → Root layout, Inter font
+│   ├── layout.tsx                      → Root layout, Google Sans Flex font
 │   ├── page.tsx                        → Homepage
 │   ├── (auth)/
 │   │   ├── login/page.tsx              → Sign in page
@@ -179,13 +179,13 @@ App code reads `session.user.id` only, never writes these tables directly.
 
 ### `categories`
 
-| Column     | Type     | Notes                          |
-| ---------- | -------- | ------------------------------ |
-| id         | String   | cuid                           |
-| userId     | String   | References users.id, indexed   |
-| name       | String   | Unique per user                |
-| color      | String   | Hex dot, e.g. #7C5CFC          |
-| createdAt  | DateTime |                                |
+| Column    | Type     | Notes                        |
+| --------- | -------- | ---------------------------- |
+| id        | String   | cuid                         |
+| userId    | String   | References users.id, indexed |
+| name      | String   | Unique per user              |
+| color     | String   | Hex dot, e.g. #7C5CFC        |
+| createdAt | DateTime |                              |
 
 `@@unique([userId, name])`
 
@@ -193,31 +193,31 @@ Default seed (per user on signup): Food, Transport, Rent, Utilities, Shopping, H
 
 ### `transactions`
 
-| Column     | Type          | Notes                              |
-| ---------- | ------------- | ---------------------------------- |
-| id         | String        | cuid                               |
-| userId     | String        | References users.id, indexed       |
-| categoryId | String        | References categories.id           |
-| type       | TransactionType | `INCOME` \| `EXPENSE`              |
-| amount     | Decimal(12,2) | Always positive, 2dp               |
-| date       | DateTime      | Transaction date, not createdAt    |
-| note       | String?       | Optional, searchable               |
-| createdAt  | DateTime      |                                    |
-| updatedAt  | DateTime      |                                    |
+| Column     | Type            | Notes                           |
+| ---------- | --------------- | ------------------------------- |
+| id         | String          | cuid                            |
+| userId     | String          | References users.id, indexed    |
+| categoryId | String          | References categories.id        |
+| type       | TransactionType | `INCOME` \| `EXPENSE`           |
+| amount     | Decimal(12,2)   | Always positive, 2dp            |
+| date       | DateTime        | Transaction date, not createdAt |
+| note       | String?         | Optional, searchable            |
+| createdAt  | DateTime        |                                 |
+| updatedAt  | DateTime        |                                 |
 
 Indexes: `(userId, date)`, `(userId, categoryId)`.
 
 ### `budgets`
 
-| Column     | Type          | Notes                              |
-| ---------- | ------------- | ---------------------------------- |
-| id         | String        | cuid                               |
-| userId     | String        | References users.id, indexed       |
-| categoryId | String        | References categories.id           |
-| month      | String        | `YYYY-MM`, e.g. 2026-09            |
-| limit      | Decimal(12,2) | Monthly cap, positive              |
-| createdAt  | DateTime      |                                    |
-| updatedAt  | DateTime      |                                    |
+| Column     | Type          | Notes                        |
+| ---------- | ------------- | ---------------------------- |
+| id         | String        | cuid                         |
+| userId     | String        | References users.id, indexed |
+| categoryId | String        | References categories.id     |
+| month      | String        | `YYYY-MM`, e.g. 2026-09      |
+| limit      | Decimal(12,2) | Monthly cap, positive        |
+| createdAt  | DateTime      |                              |
+| updatedAt  | DateTime      |                              |
 
 `@@unique([userId, categoryId, month])`
 
@@ -270,8 +270,14 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   emailAndPassword: { enabled: true },
   socialProviders: {
-    google: { clientId: process.env.GOOGLE_CLIENT_ID!, clientSecret: process.env.GOOGLE_CLIENT_SECRET! },
-    github: { clientId: process.env.GITHUB_CLIENT_ID!, clientSecret: process.env.GITHUB_CLIENT_SECRET! },
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    },
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID!,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+    },
   },
   session: { expiresIn: 60 * 60 * 24 * 7, updateAge: 60 * 60 * 24 },
   plugins: [nextCookies()],

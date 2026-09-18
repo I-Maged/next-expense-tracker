@@ -6,12 +6,7 @@ Concise rules for building ExpenseTracker UI. Same visual system as reference. T
 
 ## Font
 
-Always import Inter via `next/font/google` in the root layout.
-
-```typescript
-import { Inter } from "next/font/google";
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
-```
+Always import Google Sans Flex via `next/font/google` in the root layout.
 
 The `--font-sans` variable is already declared in `@theme` in globals.css. Apply the font variable class to the `<html>` tag in root layout. Never use system fonts as the primary font.
 

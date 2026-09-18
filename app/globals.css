@@ -1,1 +1,174 @@
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Font — resolved from next/font/google variable wired in app/layout.tsx */
+  --font-sans: var(--font-google-sans-flex), "Google Sans Flex", sans-serif;
+
+  /* Page and surface backgrounds */
+  --color-background: #f6f7fb;
+  --color-surface: #ffffff;
+  --color-surface-secondary: #f9fafb;
+  --color-surface-tertiary: #f2f5f7;
+  --color-surface-muted: #f4f5fb;
+
+  /* Borders */
+  --color-border: #e7eaf3;
+  --color-border-light: #e5e7eb;
+  --color-border-muted: #dfe1e7;
+
+  /* Text */
+  --color-text-primary: #101828;
+  --color-text-secondary: #6a7282;
+  --color-text-muted: #99a1af;
+  --color-text-dark: #364153;
+  --color-text-darker: #36394a;
+  --color-text-darkest: #111827;
+  --color-text-black: #131316;
+  --color-text-slate: #272835;
+  --color-text-slate-medium: #666d80;
+
+  /* Primary accent — purple */
+  --color-accent: #7c5cfc;
+  --color-accent-dark: #5e4cff;
+  --color-accent-light: #f3e8ff;
+  --color-accent-muted: #faf5ff;
+  --color-accent-foreground: #ffffff;
+
+  /* Success — green (income, under budget) */
+  --color-success: #10b981;
+  --color-success-alt: #00bc7d;
+  --color-success-dark: #007a55;
+  --color-success-darker: #009966;
+  --color-success-light: #d0fae5;
+  --color-success-lightest: #ecfdf5;
+  --color-success-foreground: #007a55;
+
+  /* Info — blue */
+  --color-info: #61a8ff;
+  --color-info-dark: #155dfc;
+  --color-info-medium: #2b7fff;
+  --color-info-light: #dbeafe;
+  --color-info-lightest: #eff6ff;
+  --color-info-foreground: #155dfc;
+  --color-info-muted: #94a2c5;
+
+  /* Warning — orange (near budget) */
+  --color-warning: #ff8904;
+  --color-warning-foreground: #ffffff;
+
+  /* Error — red (expense, over budget) */
+  --color-error: #ef4444;
+  --color-error-foreground: #ffffff;
+
+  /* Dark overlays */
+  --color-overlay: #111827;
+  --color-overlay-dark: #131316;
+
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    @apply bg-background font-sans text-text-primary antialiased;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    @apply rounded-md border border-border bg-surface px-3 py-2 text-sm text-text-primary;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    @apply text-text-muted;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+  select:focus,
+  textarea:focus {
+    @apply border-accent outline-none ring-1 ring-accent;
+  }
+
+  /* Manual dark-mode override hook for a future theme toggle. */
+  .dark {
+    color-scheme: dark;
+    --color-background: #0e1320;
+    --color-surface: #161c2c;
+    --color-surface-secondary: #1c2334;
+    --color-surface-tertiary: #212a3e;
+    --color-surface-muted: #1a2133;
+    --color-border: #28324a;
+    --color-border-light: #2e3a55;
+    --color-border-muted: #3a4763;
+    --color-text-primary: #eef1f7;
+    --color-text-secondary: #a6b0c2;
+    --color-text-muted: #7c869b;
+    --color-text-dark: #c6cddc;
+    --color-text-darker: #d9dfee;
+    --color-text-darkest: #f4f6fb;
+    --color-text-black: #f8fafc;
+    --color-text-slate: #dfe4ee;
+    --color-text-slate-medium: #9aa3b8;
+    --color-accent-light: #2c2656;
+    --color-accent-muted: #221e42;
+    --color-success-light: #123f31;
+    --color-success-lightest: #0d3327;
+    --color-success-foreground: #5eeab8;
+    --color-success-darker: #34d399;
+    --color-info-light: #16294e;
+    --color-info-lightest: #101f3d;
+    --color-info-foreground: #8ab4ff;
+    --color-info-muted: #7d8db4;
+  }
+}
+
+/* Automatic dark mode from OS preference. Same values as .dark above. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --color-background: #0e1320;
+    --color-surface: #161c2c;
+    --color-surface-secondary: #1c2334;
+    --color-surface-tertiary: #212a3e;
+    --color-surface-muted: #1a2133;
+    --color-border: #28324a;
+    --color-border-light: #2e3a55;
+    --color-border-muted: #3a4763;
+    --color-text-primary: #eef1f7;
+    --color-text-secondary: #a6b0c2;
+    --color-text-muted: #7c869b;
+    --color-text-dark: #c6cddc;
+    --color-text-darker: #d9dfee;
+    --color-text-darkest: #f4f6fb;
+    --color-text-black: #f8fafc;
+    --color-text-slate: #dfe4ee;
+    --color-text-slate-medium: #9aa3b8;
+    --color-accent-light: #2c2656;
+    --color-accent-muted: #221e42;
+    --color-success-light: #123f31;
+    --color-success-lightest: #0d3327;
+    --color-success-foreground: #5eeab8;
+    --color-success-darker: #34d399;
+    --color-info-light: #16294e;
+    --color-info-lightest: #101f3d;
+    --color-info-foreground: #8ab4ff;
+    --color-info-muted: #7d8db4;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-border bg-surface p-6 shadow-sm;
+  }
+}
