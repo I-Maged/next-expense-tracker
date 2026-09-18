@@ -110,3 +110,49 @@ After building any component — update this file with the component name, file 
 ### Signup page — `app/(auth)/signup/page.tsx`
 
 - Same shell as login page; H1 "Create your account"; footer link → `/login` ("Sign in")
+
+### AppNavbar — `components/layout/AppNavbar.tsx`
+
+- `activePath` prop (e.g. `/transactions`) + optional `userEmail`
+- Same header shell as Navbar: `w-full border-b border-border bg-surface`, inner `mx-auto flex h-16 w-full max-w-360 items-center justify-between gap-4 px-6`, same logo mark/text
+- Nav links: active `text-sm font-medium leading-5 text-accent` + `aria-current="page"`; inactive `text-sm font-medium leading-5 text-text-dark hover:text-accent`
+- Right side: email `hidden text-sm font-medium text-text-secondary sm:block` + `SignOutButton`
+
+### SignOutButton — `components/layout/SignOutButton.tsx`
+
+- `"use client"`; secondary `Button` "Sign out" → `authClient.signOut()` then `router.push("/")`; failures logged with `[SignOutButton]` prefix, still redirect
+
+### Transactions page — `app/transactions/page.tsx`
+
+- Server guard: `auth.api.getSession()` → `redirect("/login")` when null; `AppNavbar activePath="/transactions"` + `userEmail`
+- `main`: `mx-auto flex w-full max-w-360 flex-col gap-6 px-8 py-8`; header row `flex items-center justify-between gap-4`
+- H1 `text-2xl font-semibold leading-8 text-text-primary` ("Transactions"), sub `mt-1 text-sm font-medium leading-5 text-text-secondary`
+- Add button: primary `Button className="inline-flex items-center"` + lucide `Plus` (`mr-2 h-4 w-4`), dead until 05
+- Renders `TransactionsView` with `MOCK_TRANSACTIONS` / `MOCK_CATEGORIES` from `lib/mockTransactions.ts` (48 deterministic rows, 8 categories, `YYYY-MM-DD` dates across 2026-07/08/09)
+
+### TransactionFilters — `components/transactions/TransactionFilters.tsx`
+
+- `"use client"` controlled component: `search/categoryId/typeFilter/month` values + `onXChange` callbacks, `categories` prop
+- Wrapper `.card` + `grid grid-cols-1 gap-4 md:grid-cols-4`; `Label` + `Input`/`select` pairs (`transaction-search` placeholder "Search notes...", `transaction-category` with "All categories" + 8, `transaction-type` All/Income/Expense, `transaction-month` `type="month"`); selects `w-full` (base chrome from globals.css)
+
+### TransactionsTable — `components/transactions/TransactionsTable.tsx`
+
+- Server presentational, `transactions` prop; wrapper `card overflow-x-auto p-0`, `table w-full border-collapse text-left` + `data-testid="transactions-table"`
+- Headers: `px-4 py-3 text-xs font-medium uppercase tracking-wide text-text-secondary`, Amount/Actions `text-right`
+- Rows `border-b border-border last:border-0 hover:bg-surface-secondary`; date `whitespace-nowrap tabular-nums`; empty note renders muted "—"
+- Category pill `inline-flex items-center gap-2 rounded-full bg-surface-secondary px-2 py-0.5 text-xs font-medium text-text-secondary` + 8px dot via inline `backgroundColor`
+- Type pill: Income `bg-success-lightest text-success-foreground`, Expense `bg-surface-secondary text-text-secondary`
+- Amount `text-right tabular-nums whitespace-nowrap`, `+`/`-` prefix + `formatCurrency()`; Income `text-success`, Expense `text-text-primary`
+- Actions: dead ghost icon buttons (`Pencil`/`Trash2` `h-4 w-4`, `rounded-md p-2`, hover `text-error` on delete), `aria-label="Edit|Delete transaction <id>"`
+
+### TransactionsPagination — `components/transactions/TransactionsPagination.tsx`
+
+- `"use client"`; `page/totalPages/total/start/end/onPageChange` props; `nav aria-label="Transactions pagination"` `flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between`
+- Range text `text-xs leading-4 text-text-muted` ("Showing 1 to 20 of 48"); secondary Previous/Next (disabled at edges) + numbered `Button`s (current = primary + `aria-current="page"`, `aria-label="Page N"`)
+
+### TransactionsView — `components/transactions/TransactionsView.tsx`
+
+- `"use client"` orchestrator: `transactions/categories` props, `useState` for search/category/type/month/page (month defaults to "" = all months so all 48 show; 05 will default to current month on real queries)
+- `useMemo` filter (case-insensitive note includes, exact category/type, `date.startsWith(month)`), resets page to 1 on any filter change; slices by `TRANSACTIONS_PER_PAGE`
+- Empty (`transactions=[]`): `.card` centered `text-sm font-medium text-text-muted` "No transactions yet — add your first transaction" + primary dead CTA
+- No-results: same shell, "No transactions match these filters." + secondary "Clear filters" (resets all)

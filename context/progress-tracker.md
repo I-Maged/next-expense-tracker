@@ -7,8 +7,8 @@ Update this file after every completed feature. Any AI agent reading this should
 ## Current Status
 
 **Phase:** Phase 2 — Transactions (Core)
-**Last completed:** Auth wiring (backend live, session-aware homepage)
-**Next:** 04 Transactions Page — Full UI
+**Last completed:** 04 Transactions Page — Full UI
+**Next:** 05 Transaction CRUD Logic
 
 ---
 
@@ -23,7 +23,7 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ### Phase 2 — Transactions (Core)
 
-- [ ] 04 Transactions Page — Full UI
+- [x] 04 Transactions Page — Full UI (TDD, 18 new tests): `app/transactions/page.tsx` (server session guard → /login), `components/transactions/` (TransactionFilters, TransactionsTable, TransactionsPagination, TransactionsView client orchestrator), `components/layout/` (AppNavbar authenticated variant + SignOutButton), `lib/mockTransactions.ts` (48 deterministic rows). Filters + pagination functional over mock client-side; empty + no-results states; Add/Edit/Delete buttons dead until 05.
 - [ ] 05 Transaction CRUD Logic
 - [ ] 06 Settings Page — Categories
 
@@ -71,6 +71,9 @@ Update this file after every completed feature. Any AI agent reading this should
 - 2026-09-18: Footer has a 4th "Get Started" account link — threaded the same flag through it (all four CTAs → `/dashboard` when authed).
 - 2026-09-18: `app/page.test.tsx` mocks `@/lib/auth` + `next/headers` and renders `await Home()` — async server pages cannot render unmocked in jsdom (no request scope, no `.env`/DB). Live-verified against dev server: signup (7-day httpOnly cookie + user row), get-session, signin, sign-out (needs `Origin` header — better-auth CSRF), Google/GitHub authorize URLs built with correct callback URIs. Test user removed after.
 - 2026-09-18: Local Postgres was already listening on 5432 (Docker Desktop daemon down), so `expense_tracker` DB was created on it and `docker compose up` deferred — `docker-compose.yml` is validated (`docker compose config`) and ready for when the daemon runs. Quoted `DATABASE_URL` in `.env` left as-is (works: Next/dotenv strip quotes).
+
+- 2026-09-18: 04 month filter defaults to all months (""), not current month — so the full 48-row mock set shows on first paint and "Showing 1 to 20 of 48" holds. 05 wires the picker to real Prisma queries defaulting to the current month.
+- 2026-09-18: 04 `TransactionsView` client orchestrator holds filter + pagination `useState` (URL params deferred to 05); page stays a Server Component with the session guard, mock arrays cross the server/client boundary as plain data.
 
 _Add decisions here as they are made during implementation._
 
