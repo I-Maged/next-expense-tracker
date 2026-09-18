@@ -1,45 +1,42 @@
-# Memory — 01 Homepage (TDD) + font warning + vitest config fixes
+# Memory — 02 Auth UI slice (TDD, backend deferred)
 
 Last updated: 2026-09-18
 
 ## What was built
 
-- `components/layout/Navbar.tsx` (+ test): logo, Dashboard/Transactions/Budgets/Settings links, Get Started → `/signup`.
-- `components/homepage/Hero.tsx` (+ test): headline, subheadline, Get Started → `/signup` / Sign In → `/login`, static dashboard preview card (`data-testid="app-preview"`).
-- `components/homepage/Features.tsx` (+ test): Fast entry, Budgets, Reports (lucide icons).
-- `components/homepage/HowItWorks.tsx` (+ test): sign up / log spending / stay on budget.
-- `components/homepage/BottomCta.tsx` (+ test) and `components/layout/Footer.tsx` (+ test).
-- `app/page.tsx` (+ `app/page.test.tsx`): assembles all sections; full-page test asserts every section + CTA routing.
-- Test infra: `vitest.config.mts`, `vitest.setup.ts`, `@testing-library/react` + `jest-dom` + `jsdom` devDeps, `npm test` script in `package.json`.
-- `app/layout.tsx`: added manual `fallback: ["ui-sans-serif", "system-ui", "sans-serif"]` + `adjustFontFallback: false` to `Google_Sans_Flex()`.
-- Docs: `context/ui-registry.md` filled with exact classes per component; `context/progress-tracker.md` marks 01 Homepage done; `context/code-standards.md` approved list gains test devDeps.
+- `lib/utils.ts`: dependency-free `cn()` (no new packages).
+- `lib/auth-client.ts`: `createAuthClient()` browser client (better-auth 1.7.5 confirmed).
+- `components/ui/` primitives (+ tests): `Button` (primary/secondary/danger), `Input` (`invalid` prop), `Label` — token classes only.
+- `components/auth/` (+ tests): `SocialButtons` (Google/GitHub → `signIn.social` with `callbackURL: "/dashboard"`), `LoginForm` (`signIn.email` → `/dashboard`), `SignupForm` (`signUp.email` → `/dashboard`). Client-side validation + human-readable errors; raw provider errors never shown.
+- `app/(auth)/login/page.tsx` (+ test) and `app/(auth)/signup/page.tsx` (+ test): Server Components, `.card` layout, cross-links.
+- `proxy.ts`: cookie-presence guard (`better-auth.session_token`) for /dashboard, /transactions, /budgets, /settings; logged-in /login+/signup → /dashboard; explicit `matcher`.
+- Docs: `context/ui-registry.md` (all new components + exact classes), `context/progress-tracker.md` (02 UI done, decision log), `context/build-plan.md` (02 status note: UI done, backend deferred).
 
 ## Decisions made
 
-- TDD vertical slices (one test → one component, never batched); Server Components, one component per file, named exports except `app/page.tsx` (Next requires default export there).
-- Token utilities only (`bg-surface`, `text-text-primary`, `bg-accent`, …), `.card` reuse, mobile-first breakpoints. No raw Tailwind colors.
-- Homepage CTAs stay static links (`/signup`, `/login`) until 02 Auth wires session-aware redirects.
-- Font fix: manual `fallback` list bypasses Next's metrics lookup; `adjustFontFallback: false` suppresses size-adjust CSS. Rendering identical to before, warning gone.
-- `vitest.config.ts` → `vitest.config.mts` rename (zero content change) instead of `"type": "module"` or env-var suppression.
+- 02 Auth split UI-first / wiring-later (developer decision): UI slice shippable and test-covered without DB; `lib/auth.ts`, `app/api/auth/[...all]/route.ts`, Prisma schema+migrate, seeding, homepage session-aware CTAs, live OAuth land with 03 Database + wiring step.
+- Route guard lives in `proxy.ts`, NOT `middleware.ts` — Next 16 deprecated the middleware file convention (verified in `node_modules/next/dist/docs/.../proxy.md` per AGENTS.md rule).
+- `cn()` hand-rolled instead of installing `clsx`/`tailwind-merge` — avoids touching the approved-dependency list for zero benefit at this scale.
+- No `@testing-library/user-event` — used `fireEvent` (already installed) to avoid a new devDependency.
+- TDD vertical slices throughout (one test → one component); Server Components by default, `"use client"` only on interactive forms/buttons.
 
 ## Problems solved
 
-- "Failed to find font override values for font `Google Sans Flex`": root cause is Turbopack's native font code doing the metrics-table lookup regardless of `adjustFontFallback` (Google Sans family absent from `capsize-font-metrics.json`). `adjustFontFallback: false` alone did NOT silence it; manual `fallback` list did. Verified: warning-free build, `@font-face` + `.woff2` still emitted, variable resolves to `"Google Sans Flex", ui-sans-serif, system-ui, sans-serif`.
-- Vitest `configLoader: 'native'` ESM warning: fixed via `.mts` rename.
-- Vitest `@/` alias failed with `__dirname` in ESM-loaded config: use `path.resolve(process.cwd(), ".")`.
+- `middleware.ts` deprecation: docs say the file convention was renamed to `proxy.ts` (`export function proxy`) in Next 16; build output confirms `ƒ Proxy (Middleware)` detected. `context/library-docs.md` + `context/architecture.md` still say `middleware.ts` — flagged in progress-tracker, update when auth docs are next touched.
+- `max-w-144` valid in Tailwind v4 (dynamic spacing scale = 36rem); no custom token needed.
 
 ## Current state
 
-- `npm test`: 8/8 passing. `typecheck`, `lint`, `npm run build` all clean, zero warnings.
-- Phase 1: 01 Homepage done. 02 Auth not started.
-- Working-tree changes (homepage, config, docs) are implemented and verified but uncommitted.
+- `npm test`: 30/30 passing (8 homepage + 22 new). `typecheck`, `lint`, `npm run build` clean, zero warnings; `/login` + `/signup` routes live.
+- Phase 1: 01 Homepage done, 02 Auth UI done (backend deferred), 03 Database not started.
+- All changes (code + context docs) implemented and verified but uncommitted.
 
 ## Next session starts with
 
-- Build 02 Auth per `context/build-plan.md`: login/signup pages, `lib/auth.ts` (betterAuth + prismaAdapter + Google/GitHub + `nextCookies()` last), `lib/auth-client.ts`, `app/api/auth/[...all]/route.ts`, `middleware.ts` cookie guard, post-login redirect to `/dashboard`.
+- Build 03 Database + Docker per `context/build-plan.md`, then Auth wiring: `docker-compose.yml`, `.env` values, `bunx auth generate` schema, `prisma migrate dev`, `lib/prisma.ts`, `lib/auth.ts` (prismaAdapter + `nextCookies()` last), `app/api/auth/[...all]/route.ts`, live OAuth verification, homepage session-aware CTAs.
 
 ## Open questions
 
-- shadcn/ui + `lib/utils.ts` (`cn()`) setup still unchecked — verify before building components that need them (02 Auth forms will).
-- Manual theme toggle UI deferred to Phase 5 polish.
-- Whether to commit the current working tree before starting 02 Auth.
+- Google/GitHub OAuth client IDs + secrets still not supplied — OAuth buttons are mock-verified only.
+- Whether to commit the current working tree before starting 03.
+- `library-docs.md` / `architecture.md` `middleware.ts` references need renaming to `proxy.ts` during the wiring step.

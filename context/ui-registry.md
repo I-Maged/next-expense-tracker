@@ -57,3 +57,48 @@ After building any component — update this file with the component name, file 
 - `w-full border-t border-border bg-surface`; inner `mx-auto max-w-[1440px] px-6 py-10 md:flex-row`
 - Link groups: label `text-xs font-medium uppercase tracking-wide text-text-muted`, links `text-sm font-medium text-text-dark hover:text-accent`
 - Bottom bar: `border-t border-border`, `text-xs text-text-muted` © line
+
+### Button — `components/ui/button.tsx`
+
+- Base: `rounded-md px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed`
+- Primary (default): `bg-accent text-accent-foreground hover:bg-accent-dark disabled:opacity-60`
+- Secondary: `border border-border bg-surface text-text-primary hover:bg-surface-secondary disabled:opacity-60`
+- Danger: `border border-border bg-surface text-error hover:bg-surface-secondary disabled:opacity-60`
+- Merged via `cn()` from `lib/utils.ts`; caller `className` appended last
+
+### Input — `components/ui/input.tsx`
+
+- `w-full rounded-md border bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent`
+- Border: `border-border` default, `border-error` when `invalid`; sets `aria-invalid` when invalid
+
+### Label — `components/ui/label.tsx`
+
+- `text-sm font-medium leading-5 text-text-secondary`, bound via `htmlFor`
+
+### SocialButtons — `components/auth/SocialButtons.tsx`
+
+- Wrapper: `flex flex-col gap-3`; per-provider row `flex flex-col gap-2`
+- Secondary `Button`s: "Continue with Google" / "Continue with GitHub"; pending shows "Connecting to …" and disables both
+- Failure text: `text-sm text-error` with `role="alert"`, human-readable only (never raw provider error)
+
+### LoginForm — `components/auth/LoginForm.tsx`
+
+- Form: `flex flex-col gap-4` with `noValidate`; fields `flex flex-col gap-2`
+- `Label` + `Input` pairs (`login-email`, `login-password`); field errors `text-sm text-error` with `role="alert"`
+- Submit: primary `Button type="submit"`, "Sign In" / "Signing in…" while pending
+
+### SignupForm — `components/auth/SignupForm.tsx`
+
+- Same shell as LoginForm; fields `signup-name`, `signup-email`, `signup-password`
+- Submit: "Create Account" / "Creating account…" while pending
+
+### Login page — `app/(auth)/login/page.tsx`
+
+- `main`: `mx-auto flex w-full max-w-144 flex-col px-8 py-16`; card: `.card flex flex-col gap-6`
+- Header block centered: H1 `text-2xl font-semibold leading-8 text-text-primary` ("Welcome back"), sub `text-sm font-medium leading-5 text-text-secondary`
+- Divider: `flex items-center gap-4` with `h-px flex-1 bg-border` rules + `text-xs text-text-muted` "or"
+- Footer line: `text-center text-sm font-medium leading-5 text-text-secondary`, link `text-accent hover:underline` → `/signup` ("Create an account")
+
+### Signup page — `app/(auth)/signup/page.tsx`
+
+- Same shell as login page; H1 "Create your account"; footer link → `/login` ("Sign in")

@@ -33,6 +33,8 @@ Build the complete homepage UI.
 
 Better-Auth authentication — email/password + Google + GitHub OAuth, session cookies.
 
+> Status 2026-09-18: **UI slice done, backend deferred** (developer decision: UI-only first, DB later). Done: login/signup pages (`app/(auth)/`), `SocialButtons`/`LoginForm`/`SignupForm`, `components/ui/` primitives + `lib/utils.ts` `cn()`, `lib/auth-client.ts`, `proxy.ts` cookie guard (note: `proxy.ts`, not `middleware.ts` — Next 16 renamed the convention), 22 new tests green. Still pending (lands with 03 Database + wiring step): `lib/auth.ts`, `app/api/auth/[...all]/route.ts`, Prisma schema + migrate, category seeding, homepage session-aware CTAs, live OAuth verification.
+
 **UI:**
 
 - Login page — email + password form, Google button, GitHub button, link to signup

@@ -7,8 +7,8 @@ Update this file after every completed feature. Any AI agent reading this should
 ## Current Status
 
 **Phase:** Phase 1 — Foundation
-**Last completed:** 01 Homepage
-**Next:** 02 Auth
+**Last completed:** 02 Auth (UI only — no backend)
+**Next:** 03 Database + Docker, then Auth wiring (`lib/auth.ts`, API route, live OAuth)
 
 ---
 
@@ -17,7 +17,7 @@ Update this file after every completed feature. Any AI agent reading this should
 ### Phase 1 — Foundation
 
 - [x] 01 Homepage
-- [ ] 02 Auth
+- [x] 02 Auth — UI only (login/signup pages, forms, social buttons, `lib/auth-client.ts`, `proxy.ts` guard; 22 new tests). Backend deferred: `lib/auth.ts`, `app/api/auth/[...all]`, Prisma schema, live OAuth exchange.
 - [ ] 03 Database + Docker
 
 ### Phase 2 — Transactions (Core)
@@ -58,6 +58,8 @@ Update this file after every completed feature. Any AI agent reading this should
 - 2026-09-18: Dark mode = CSS-variable overrides (accent/success/warning/error hues unchanged, surfaces + text + light-tints adapted), auto via `prefers-color-scheme` + `.dark` class hook (`@custom-variant`) for a future toggle. No `.light` escape hatch yet.
 - 2026-09-18: Homepage built TDD (vitest + @testing-library/react + jsdom, `npm test`): Server Components in `components/layout/` (Navbar, Footer) + `components/homepage/` (Hero, Features, HowItWorks, BottomCta), one component per file, named exports (default export only for `app/page.tsx` as Next requires). Token utilities only, no raw Tailwind colors. Homepage CTAs are static links (`/signup`, `/login`) until 02 Auth wires session-aware redirects.
 - 2026-09-18: Font warning fixed — Google Sans Flex has no entry in Next's fallback-metrics table and Turbopack ignores `adjustFontFallback: false` for the lookup, so `app/layout.tsx` now passes a manual `fallback: ["ui-sans-serif", "system-ui", "sans-serif"]` (bypasses lookup, kills warning) + `adjustFontFallback: false` (no size-adjust CSS). Variable resolves to `"Google Sans Flex", ui-sans-serif, system-ui, sans-serif`; .woff2 still self-hosted.
+- 2026-09-18: 02 Auth split into UI-first + wiring-later (developer decision). UI slice done TDD: `app/(auth)/login|signup`, `components/auth/` (SocialButtons, LoginForm, SignupForm), `components/ui/` (Button, Input, Label), `lib/utils.ts` (`cn()` dependency-free — `clsx`/`tailwind-merge` deliberately not installed), `lib/auth-client.ts`, `proxy.ts` cookie guard. Deferred to 03/wiring: `lib/auth.ts`, `app/api/auth/[...all]/route.ts`, Prisma schema + migrate, seeding, homepage session-aware CTAs, live OAuth verification (Google/GitHub buttons call `signIn.social` with `callbackURL: "/dashboard"`, mock-verified only).
+- 2026-09-18: Route guard lives in `proxy.ts` (`export function proxy`), NOT `middleware.ts` — Next 16 deprecated the middleware file convention (see `node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/proxy.md`). Same cookie-presence logic as library-docs, plus explicit `matcher` for protected + auth routes so static assets never hit the guard. `context/library-docs.md` + `architecture.md` still say `middleware.ts` — update them when the wiring step touches auth docs.
 
 _Add decisions here as they are made during implementation._
 
