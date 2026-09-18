@@ -12,7 +12,11 @@ const ACCOUNT_LINKS = [
   { label: "Get Started", href: "/signup" },
 ] as const;
 
-export function Footer() {
+type Props = {
+  authenticated?: boolean;
+};
+
+export function Footer({ authenticated = false }: Props) {
   return (
     <footer className="w-full border-t border-border bg-surface">
       <div className="mx-auto flex w-full max-w-360 flex-col gap-8 px-6 py-10 md:flex-row md:items-start md:justify-between">
@@ -45,7 +49,7 @@ export function Footer() {
           {ACCOUNT_LINKS.map((link) => (
             <Link
               key={link.href}
-              href={link.href}
+              href={authenticated ? "/dashboard" : link.href}
               className="text-sm font-medium leading-5 text-text-dark transition-colors hover:text-accent"
             >
               {link.label}

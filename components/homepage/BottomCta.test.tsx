@@ -15,4 +15,13 @@ describe("BottomCta", () => {
       "/signup",
     );
   });
+
+  it("points the CTA at the dashboard when authenticated", () => {
+    render(<BottomCta authenticated />);
+
+    expect(screen.getByRole("link", { name: "Get Started" })).toHaveAttribute(
+      "href",
+      "/dashboard",
+    );
+  });
 });

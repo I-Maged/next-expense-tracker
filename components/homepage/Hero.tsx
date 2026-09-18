@@ -6,7 +6,11 @@ const PREVIEW_BARS = [
   { label: "Shopping", width: "41%", tone: "bg-warning" },
 ] as const;
 
-export function Hero() {
+type Props = {
+  authenticated?: boolean;
+};
+
+export function Hero({ authenticated = false }: Props) {
   return (
     <section className="mx-auto flex w-full max-w-360 flex-col items-center px-8 pt-16 pb-12 text-center md:pt-24">
       <h1 className="max-w-2xl text-4xl font-bold leading-tight text-text-primary md:text-6xl">
@@ -18,13 +22,13 @@ export function Hero() {
       </p>
       <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
         <Link
-          href="/signup"
+          href={authenticated ? "/dashboard" : "/signup"}
           className="rounded-md bg-accent px-6 py-3 text-sm font-medium text-accent-foreground transition-colors hover:bg-accent-dark"
         >
           Get Started
         </Link>
         <Link
-          href="/login"
+          href={authenticated ? "/dashboard" : "/login"}
           className="rounded-md border border-border bg-surface px-6 py-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface-secondary"
         >
           Sign In

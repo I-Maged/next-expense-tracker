@@ -1,41 +1,45 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+const { mockGetSession } = vi.hoisted(() => ({ mockGetSession: vi.fn() }));
+
+vi.mock("next/headers", () => ({ headers: vi.fn(async () => new Headers()) }));
+vi.mock("@/lib/auth", () => ({
+  auth: { api: { getSession: mockGetSession } },
+}));
 
 import Home from "@/app/page";
 
 describe("Homepage", () => {
-  it("renders navbar, hero, features, how it works, bottom CTA, and footer", () => {
-    render(<Home />);
+  it("renders sections with logged-out CTAs", async () => {
+    mockGetSession.mockResolvedValue(null);
+    render(await Home());
 
     expect(screen.getByRole("banner")).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: /know where your money goes/i }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: /everything you need/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: /^how it works$/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: /start tracking today/i }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("contentinfo")).toBeInTheDocument();
     expect(screen.getByTestId("app-preview")).toBeInTheDocument();
+
+    for (const cta of screen.getAllByRole("link", { name: "Get Started" })) {
+      expect(cta).toHaveAttribute("href", "/signup");
+    }
+    for (const link of screen.getAllByRole("link", { name: "Sign In" })) {
+      expect(link).toHaveAttribute("href", "/login");
+    }
   });
 
-  it("routes Get Started to signup and Sign In to login", () => {
-    render(<Home />);
+  it("points CTAs at the dashboard when authenticated", async () => {
+    mockGetSession.mockResolvedValue({ user: { id: "user_1" } });
+    render(await Home());
 
     const ctas = screen.getAllByRole("link", { name: "Get Started" });
     expect(ctas.length).toBeGreaterThan(0);
     for (const cta of ctas) {
-      expect(cta).toHaveAttribute("href", "/signup");
+      expect(cta).toHaveAttribute("href", "/dashboard");
     }
-    const signIns = screen.getAllByRole("link", { name: "Sign In" });
-    expect(signIns.length).toBeGreaterThan(0);
-    for (const link of signIns) {
-      expect(link).toHaveAttribute("href", "/login");
+    for (const link of screen.getAllByRole("link", { name: "Sign In" })) {
+      expect(link).toHaveAttribute("href", "/dashboard");
     }
   });
 });

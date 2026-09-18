@@ -1,6 +1,10 @@
 import Link from "next/link";
 
-export function BottomCta() {
+type Props = {
+  authenticated?: boolean;
+};
+
+export function BottomCta({ authenticated = false }: Props) {
   return (
     <section aria-labelledby="bottom-cta-heading" className="w-full bg-surface">
       <div className="mx-auto w-full max-w-360 px-8 py-16 text-center">
@@ -14,7 +18,7 @@ export function BottomCta() {
           Free to start. No bank sync, no spreadsheets, no paywalled reports.
         </p>
         <Link
-          href="/signup"
+          href={authenticated ? "/dashboard" : "/signup"}
           className="mt-6 inline-block rounded-md bg-accent px-6 py-3 text-sm font-medium text-accent-foreground transition-colors hover:bg-accent-dark"
         >
           Get Started

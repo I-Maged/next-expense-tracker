@@ -18,4 +18,17 @@ describe("Footer", () => {
       "/login",
     );
   });
+
+  it("points account links at the dashboard when authenticated", () => {
+    render(<Footer authenticated />);
+
+    expect(screen.getByRole("link", { name: "Sign In" })).toHaveAttribute(
+      "href",
+      "/dashboard",
+    );
+    expect(screen.getByRole("link", { name: "Get Started" })).toHaveAttribute(
+      "href",
+      "/dashboard",
+    );
+  });
 });

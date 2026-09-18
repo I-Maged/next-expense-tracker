@@ -30,4 +30,13 @@ describe("Navbar", () => {
       "/signup",
     );
   });
+
+  it("points the CTA at the dashboard via ctaHref", () => {
+    render(<Navbar ctaHref="/dashboard" />);
+
+    expect(screen.getByRole("link", { name: "Get Started" })).toHaveAttribute(
+      "href",
+      "/dashboard",
+    );
+  });
 });

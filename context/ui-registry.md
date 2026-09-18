@@ -20,6 +20,8 @@ After building any component — update this file with the component name, file 
 
 ### Navbar — `components/layout/Navbar.tsx`
 
+- `ctaHref` prop (default `/signup`) — homepage passes `/dashboard` when authenticated
+
 - Header: `w-full border-b border-border bg-surface`
 - Inner: `mx-auto flex h-16 w-full max-w-[1440px] items-center justify-between px-6`
 - Logo mark: 36px (`h-9 w-9`) `rounded-[10px]`, inline gradient `linear-gradient(45deg, #7C5CFC 0%, #4A2EC5 100%)`, white bold letter
@@ -28,6 +30,8 @@ After building any component — update this file with the component name, file 
 - CTA: `rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent-dark`, href `/signup`
 
 ### Hero — `components/homepage/Hero.tsx`
+
+- `authenticated` prop (default `false`) — both CTAs point at `/dashboard` when true
 
 - Section: `mx-auto flex w-full max-w-[1440px] flex-col items-center px-8 pt-16 pb-12 text-center md:pt-24`
 - H1: `max-w-2xl text-4xl font-bold text-text-primary md:text-6xl`
@@ -50,9 +54,13 @@ After building any component — update this file with the component name, file 
 
 ### BottomCta — `components/homepage/BottomCta.tsx`
 
+- `authenticated` prop (default `false`) — CTA points at `/dashboard` when true
+
 - Band `w-full bg-surface`, centered; H2 `text-3xl font-bold text-text-primary`; CTA same primary style → `/signup`
 
 ### Footer — `components/layout/Footer.tsx`
+
+- `authenticated` prop (default `false`) — Account links (Sign In, Get Started) point at `/dashboard` when true
 
 - `w-full border-t border-border bg-surface`; inner `mx-auto max-w-[1440px] px-6 py-10 md:flex-row`
 - Link groups: label `text-xs font-medium uppercase tracking-wide text-text-muted`, links `text-sm font-medium text-text-dark hover:text-accent`

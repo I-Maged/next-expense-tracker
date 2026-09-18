@@ -24,4 +24,17 @@ describe("Hero", () => {
     expect(screen.getByTestId("app-preview")).toBeInTheDocument();
     expect(screen.getByText("Spent This Month")).toBeInTheDocument();
   });
+
+  it("points CTAs at the dashboard when authenticated", () => {
+    render(<Hero authenticated />);
+
+    expect(screen.getByRole("link", { name: "Get Started" })).toHaveAttribute(
+      "href",
+      "/dashboard",
+    );
+    expect(screen.getByRole("link", { name: "Sign In" })).toHaveAttribute(
+      "href",
+      "/dashboard",
+    );
+  });
 });
