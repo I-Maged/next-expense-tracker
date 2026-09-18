@@ -279,5 +279,6 @@ Approved dependencies for this project:
 - `lucide-react` — Icons
 - `tailwindcss` — Styling
 - `shadcn/ui` components — UI primitives
+- `vitest` + `@testing-library/react` + `@testing-library/jest-dom` + `jsdom` — Component tests (dev only, `npm test`)
 
 Do not install any other packages without updating this list first.

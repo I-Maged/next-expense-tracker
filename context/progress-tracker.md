@@ -6,9 +6,9 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ## Current Status
 
-**Phase:** —
-**Last completed:** —
-**Next:** 01 Homepage
+**Phase:** Phase 1 — Foundation
+**Last completed:** 01 Homepage
+**Next:** 02 Auth
 
 ---
 
@@ -16,7 +16,7 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ### Phase 1 — Foundation
 
-- [ ] 01 Homepage
+- [x] 01 Homepage
 - [ ] 02 Auth
 - [ ] 03 Database + Docker
 
@@ -56,6 +56,8 @@ Update this file after every completed feature. Any AI agent reading this should
 - 2026-09-18: globals.css = full `@theme` tokens verbatim from ui-tokens.md + base body/input defaults + `.card` component class. No `tailwind.config.*` (v4 CSS-first).
 - 2026-09-18: Font = `Google_Sans_Flex` via `next/font/google` (`variable: --font-google-sans-flex`, latin subset), wired into `--font-sans`. Removed runtime Google Fonts `@import`. Build warns "no font override values" — benign, fallback chain covers it.
 - 2026-09-18: Dark mode = CSS-variable overrides (accent/success/warning/error hues unchanged, surfaces + text + light-tints adapted), auto via `prefers-color-scheme` + `.dark` class hook (`@custom-variant`) for a future toggle. No `.light` escape hatch yet.
+- 2026-09-18: Homepage built TDD (vitest + @testing-library/react + jsdom, `npm test`): Server Components in `components/layout/` (Navbar, Footer) + `components/homepage/` (Hero, Features, HowItWorks, BottomCta), one component per file, named exports (default export only for `app/page.tsx` as Next requires). Token utilities only, no raw Tailwind colors. Homepage CTAs are static links (`/signup`, `/login`) until 02 Auth wires session-aware redirects.
+- 2026-09-18: Font warning fixed — Google Sans Flex has no entry in Next's fallback-metrics table and Turbopack ignores `adjustFontFallback: false` for the lookup, so `app/layout.tsx` now passes a manual `fallback: ["ui-sans-serif", "system-ui", "sans-serif"]` (bypasses lookup, kills warning) + `adjustFontFallback: false` (no size-adjust CSS). Variable resolves to `"Google Sans Flex", ui-sans-serif, system-ui, sans-serif`; .woff2 still self-hosted.
 
 _Add decisions here as they are made during implementation._
 

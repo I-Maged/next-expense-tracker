@@ -18,4 +18,42 @@ After building any component — update this file with the component name, file 
 
 ## Components
 
-_Empty. Components will be added here as they are built._
+### Navbar — `components/layout/Navbar.tsx`
+
+- Header: `w-full border-b border-border bg-surface`
+- Inner: `mx-auto flex h-16 w-full max-w-[1440px] items-center justify-between px-6`
+- Logo mark: 36px (`h-9 w-9`) `rounded-[10px]`, inline gradient `linear-gradient(45deg, #7C5CFC 0%, #4A2EC5 100%)`, white bold letter
+- Logo text: `text-[19px] font-bold leading-7 text-text-darkest`
+- Nav: `hidden items-center gap-6 md:flex`, links `text-sm font-medium leading-5 text-text-dark hover:text-accent`
+- CTA: `rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent-dark`, href `/signup`
+
+### Hero — `components/homepage/Hero.tsx`
+
+- Section: `mx-auto flex w-full max-w-[1440px] flex-col items-center px-8 pt-16 pb-12 text-center md:pt-24`
+- H1: `max-w-2xl text-4xl font-bold text-text-primary md:text-6xl`
+- Sub: `mt-4 max-w-xl text-base text-text-secondary md:text-lg`
+- CTAs: primary `bg-accent ... px-6 py-3` → `/signup`; secondary `border border-border bg-surface ... hover:bg-surface-secondary` → `/login`
+- Preview: `.card mt-12 w-full max-w-3xl text-left` + `data-testid="app-preview"`; stat `text-3xl font-semibold tabular-nums`; badge `rounded-full bg-success-lightest px-2.5 py-1 text-xs font-medium text-success-foreground`; bars track `h-2 rounded-full bg-border-light`, fills `bg-accent` / `bg-success` / `bg-warning` via inline width
+
+### Features — `components/homepage/Features.tsx`
+
+- Section band: `w-full bg-surface`; inner `mx-auto max-w-[1440px] px-8 py-16`
+- Heading: centered `text-2xl font-semibold text-text-primary`
+- Grid: `grid grid-cols-1 gap-6 md:grid-cols-3`; cards use `.card`
+- Icon chip: `flex h-10 w-10 items-center justify-center rounded-lg bg-accent-light`, icon `h-5 w-5 text-accent` (lucide: Zap, Wallet, BarChart3)
+
+### HowItWorks — `components/homepage/HowItWorks.tsx`
+
+- Same section shell as Features (no band bg); `ol` with `grid grid-cols-1 gap-6 md:grid-cols-3`
+- Step number: `flex h-10 w-10 items-center justify-center rounded-full bg-accent-muted text-base font-semibold text-accent`
+- Cards use `.card`
+
+### BottomCta — `components/homepage/BottomCta.tsx`
+
+- Band `w-full bg-surface`, centered; H2 `text-3xl font-bold text-text-primary`; CTA same primary style → `/signup`
+
+### Footer — `components/layout/Footer.tsx`
+
+- `w-full border-t border-border bg-surface`; inner `mx-auto max-w-[1440px] px-6 py-10 md:flex-row`
+- Link groups: label `text-xs font-medium uppercase tracking-wide text-text-muted`, links `text-sm font-medium text-text-dark hover:text-accent`
+- Bottom bar: `border-t border-border`, `text-xs text-text-muted` © line
