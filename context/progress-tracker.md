@@ -6,9 +6,9 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ## Current Status
 
-**Phase:** Phase 2 — Transactions (Core)
-**Last completed:** 06 Settings Page — Categories
-**Next:** 07 Budgets Page — Full UI
+**Phase:** Phase 3 — Budgets
+**Last completed:** 07 Budgets Page — Full UI
+**Next:** 08 Budget Logic
 
 ---
 
@@ -29,7 +29,7 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ### Phase 3 — Budgets
 
-- [ ] 07 Budgets Page — Full UI
+- [x] 07 Budgets Page — Full UI (TDD, 14 new tests, 138 total): `app/budgets/page.tsx` (server session guard → /login, pure mocks, no Prisma/seeding), `components/budgets/` (BudgetCard presentational with threshold fills, BudgetsView client orchestrator with month `useState` defaulting to current), `lib/mockBudgets.ts` (7 deterministic rows: 5 current month covering under/near/over, 2 prior month). Copy Last Month / Set Budget buttons dead until 08; URL params deferred to 08.
 - [ ] 08 Budget Logic
 
 ### Phase 4 — Dashboard + Reports
@@ -80,6 +80,9 @@ Update this file after every completed feature. Any AI agent reading this should
 - 2026-09-19: 05 category seeding lives in `actions/categories.ts` `seedDefaultCategories()` (8 names from `DEFAULT_CATEGORIES` + mock palette colors, `count==0` guard), triggered on transactions page load before reads.
 - 2026-09-19: 05 `createTransactionSchema.amount` is `z.coerce.number()` (forms send strings) + new `updateTransactionSchema` (create + `id`) and `deleteTransactionSchema`; future-date check is dynamic (`getTime() <= Date.now()`), not module-load `new Date()`. Empty-string notes normalize to `undefined` in actions.
 - 2026-09-19: 06 category actions are create/update/delete (update covers rename + recolor) with one shared `CategoryForm`; swatches-only palette (`CATEGORY_COLORS`, 8 seed colors, no free hex); page follows 05 pattern (server guard + seed + `_count` read, client manager + dialogs + `router.refresh()`); components split like 05 (`CategoryManager` + `CategoryForm` + `DeleteCategoryDialog` + `types.ts`); revalidate `/settings` + `/transactions` + `/dashboard` + `/budgets`; delete blocked when transactions or budgets reference (counts in message); `P2002` maps to "Category name already exists".
+
+- 2026-09-19: 06 category actions are create/update/delete (update covers rename + recolor) with one shared `CategoryForm`; swatches-only palette (`CATEGORY_COLORS`, 8 seed colors, no free hex); page follows 05 pattern (server guard + seed + `_count` read, client manager + dialogs + `router.refresh()`); components split like 05 (`CategoryManager` + `CategoryForm` + `DeleteCategoryDialog` + `types.ts`); revalidate `/settings` + `/transactions` + `/dashboard` + `/budgets`; delete blocked when transactions or budgets reference (counts in message); `P2002` maps to "Category name already exists".
+- 2026-09-19: 07 budgets UI-first over dynamic mocks (`MOCK_CURRENT_MONTH`/`MOCK_PREV_MONTH` derived from `monthKey(new Date())` so first paint always has data); `BudgetForm` deferred to 08 with dead Copy/Set buttons (04 precedent); `MockBudget` shape mirrors future `BudgetView` (plain numbers) for a clean 08 swap; progress fill `bg-success` <80% / `bg-warning` 80–100% / `bg-error` >100%, width capped at 100%.
 
 _Add decisions here as they are made during implementation._
 

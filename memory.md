@@ -1,45 +1,36 @@
-# Memory — 05 Transaction CRUD Logic
+# Memory — 07 Budgets Page (Full UI)
 
 Last updated: 2026-09-19
 
 ## What was built
 
-- `actions/transactions.ts` (+ test, 9 tests): `createTransaction` / `updateTransaction` / `deleteTransaction` — `"use server"`, session check + zod `safeParse` + category-ownership `findFirst` + user-scoped Prisma writes, `revalidatePath("/transactions")` + `("/dashboard")`, never throws (returns `{ success }`).
-- `actions/categories.ts` (+ test, 4 tests): `seedDefaultCategories()` — creates 8 defaults (names from `DEFAULT_CATEGORIES`, mock palette colors) only when user has zero categories.
-- `lib/validations.ts`: `amount` is now `z.coerce.number()` (forms send strings), new `updateTransactionSchema` (create + `id`) and `deleteTransactionSchema`, future-date check is dynamic (`getTime() <= Date.now()` instead of module-load `new Date()`).
-- `components/ui/dialog.tsx` (+ test, 3 tests): hand-rolled accessible dialog (no radix dep) — overlay `bg-overlay/60` with backdrop-click close, `.card w-full max-w-md` panel, `role="dialog"`, Escape to close.
-- `components/transactions/TransactionForm.tsx` (+ test, 5 tests): one dialog form for create + edit (`initial` prop, Expense default type toggle, amount `inputMode="decimal"` + `autoFocus`, category select, date `max` today, note max 200, client checks + server error `role="alert"`).
-- `components/transactions/DeleteTransactionDialog.tsx` (+ test, 3 tests): confirm dialog with note/amount summary, danger Delete, server error `role="alert"`.
-- `components/transactions/types.ts`: `CategoryView` / `TransactionView` (server maps Prisma `Decimal`→number, `DateTime`→`YYYY-MM-DD`, null note→`""` at boundary).
-- `app/transactions/page.tsx` (+ rewritten test, 3 tests): awaits `searchParams` (`search/category/type/month/page`, month defaults to `monthKey(new Date())`), seeds categories, Prisma `count` + `findMany` scoped by `userId` (month `gte/lt` range, category, type, note `contains insensitive`, `orderBy date desc`, `take/skip` 20).
-- `components/transactions/TransactionsView.tsx` (rewritten, 7 tests): URL-driven shell — owns header row + Add button, filter changes `router.push` new query (defaults deleted, page reset), pagination sets `?page=`, dialogs remounted via `key`, success calls `router.refresh()`; empty vs no-results states (month excluded from active-filter check). `TransactionsTable` takes `TransactionView` + optional `onEdit`/`onDelete`; `TransactionFilters` takes `CategoryView[]`.
-- Docs: `context/ui-registry.md` (5 new/updated entries), `context/progress-tracker.md` (05 checked, 6 new decisions).
+- `lib/mockBudgets.ts` (+ test, 3 tests): `MockBudget { id, categoryId, category, month, limit, spent }` (plain numbers, mirrors future `BudgetView`), 7 deterministic rows — 5 in `MOCK_CURRENT_MONTH` (under/near/at/over/zero spent) + 2 in `MOCK_PREV_MONTH`; months derived from `monthKey(new Date())` so first paint always has data.
+- `components/budgets/BudgetCard.tsx` (+ test, 4 tests): server presentational — dot + name, `spent / limit` via `formatCurrency()`, `h-2` progress bar (`bg-success` <80% / `bg-warning` 80–100% / `bg-error` >100%, width capped 100%, labelled `progressbar`), remaining (`text-text-secondary`) or `+$X over` (`text-error`).
+- `components/budgets/BudgetsView.tsx` (+ test, 5 tests): `"use client"` shell — month `useState` defaulting to current, client-side month filter (URL params deferred to 08), header (H1 + month picker + dead secondary Copy Last Month + dead primary Set Budget), `budget-grid` (`md:grid-cols-2 xl:grid-cols-3`), empty state + dead CTA.
+- `app/settings/page.tsx` equivalent for budgets — `app/budgets/page.tsx` (+ test, 2 tests): session guard → `/login`, pure mocks (no Prisma/seeding), `AppNavbar activePath="/budgets"`.
+- Docs: `context/ui-registry.md` (3 new entries), `context/progress-tracker.md` (07 checked, Phase 3 opened, 1 new decision line).
 
 ## Decisions made
 
-- Server URL filters (`?search=&category=&type=&month=&page=`) replace client `useMemo` filtering — shareable URLs, real 20/page pagination; month defaults to current month (04's all-months default retired with the mocks).
-- Hand-rolled dialog over `@radix-ui/react-dialog` — no new dependency per code-standards simpler-native rule.
-- Single `TransactionForm` for create + edit; separate delete-confirm dialog.
-- Dialog state reset via parent `key` remount (no `setState`-in-effect, satisfies `react-hooks/set-state-in-effect` lint); closed keys namespaced per dialog (`"form-closed"` / `"delete-closed"`).
-- Category seeding stays in 05, triggered on transactions page load before reads (answers the 04 open question).
-- Skills used: architect (plan + blueprint, all 4 recommendations confirmed), tdd (vertical slices), tailwind-v4 (token-only classes).
+- BudgetForm deferred to 08 with dead Copy/Set buttons — 04 precedent (forms arrive with the logic phase).
+- UI-first over dynamic mocks (not fixed month pools) so the page never first-paints empty as calendar time moves.
+- `MockBudget` shape mirrors future `BudgetView` for a clean 08 swap (server maps Prisma + live spent at boundary).
+- Progress thresholds locked: green <80%, orange 80–100%, red >100%; track `bg-border-light`; over-budget carried by red bar + red text only (no extra border).
+- Skills used: architect (plan + blueprint, all 3 answers confirmed), tdd (vertical slices), tailwind-v4 (token-only classes), review (0 issues).
 
 ## Problems solved
 
-- `react-hooks/set-state-in-effect` lint errors from resetting form state in `useEffect` on open — replaced with `key`-based remount from the parent.
-- Duplicate `key="closed"` React warning (both dialogs are siblings with the same closed key) — namespaced to `"form-closed"` / `"delete-closed"`.
-- Stray file written to wrong path (`episode-tracker/` typo) during page test rewrite — removed, correct file rewritten.
-- Mock `amount` objects in page test need `.toNumber()` (page maps Prisma `Decimal` at boundary) — mocked as `{ toNumber: () => n }`.
+- None — no blockers this session. Fixed-month mock pools (04's `MONTH_POOL`) would have left the budgets page permanently empty-state once the calendar moved past them; solved by deriving mock months from the current date.
 
 ## Current state
 
-- `npm test`: 88/88 passing (29 files, +25 new this session). `typecheck`, `lint`, `npm run build` clean. Build shows `ƒ /transactions` (dynamic, correct).
-- Phase 2: 05 done. Everything implemented and verified but uncommitted (01–05 now uncommitted).
+- `npm test`: 138/138 passing (37 files, +14 new this session). `typecheck`, `lint`, `npm run build` clean. Build shows `ƒ /budgets` (dynamic via session guard, correct).
+- Phase 3 opened: 07 done. Everything implemented and verified but uncommitted (01–07 now uncommitted).
 
 ## Next session starts with
 
-- Build 06 Settings Page — Categories per `context/build-plan.md`: category list (dot, name, transaction count, edit/delete), Add Category form (name + preset color swatches), empty state; `actions/categories.ts` create/rename/recolor/delete with per-user name uniqueness and delete-blocked-when-referenced logic.
+- Build 08 Budget Logic per `context/build-plan.md`: `actions/budgets.ts` (upsert one-per-category-per-month, delete, copy-last-month), `spent` aggregated live from EXPENSE transactions in the selected month (never stored), `BudgetForm` dialog wired to Set Budget buttons, URL-driven month (`?month=`, default current), `revalidatePath("/budgets")` + `("/dashboard")`; retire `lib/mockBudgets.ts` with the mocks.
 
 ## Open questions
 
-- None. 04's seeding question is resolved (seeding lives in 05).
+- None. 08 scope is fully specified in the build plan.

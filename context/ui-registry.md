@@ -197,3 +197,24 @@ After building any component — update this file with the component name, file 
 ### Settings view types — `components/settings/types.ts`
 
 - `CategoryWithCount { id, name, color, transactionCount }` — server maps Prisma `_count.transactions` to this before passing to client
+
+### Budgets page — `app/budgets/page.tsx`
+
+- Server guard: `auth.api.getSession()` → `redirect("/login")` when null; `AppNavbar activePath="/budgets"` + `userEmail`
+- No Prisma, no seeding (pure mocks like 04) — passes `MOCK_BUDGETS` to `BudgetsView`
+- `main`: `mx-auto flex w-full max-w-360 flex-col gap-6 px-8 py-8`
+
+### BudgetsView — `components/budgets/BudgetsView.tsx`
+
+- `"use client"` shell: `budgets: MockBudget[]` prop; month `useState` defaulting to `monthKey(new Date())`, filters rows client-side (URL params deferred to 08)
+- Header: H1 "Budgets" + "Set monthly limits and stay on track."; `Month` (`budgets-month`, `type="month"`) + secondary "Copy Last Month" (dead) + primary "Set Budget" with `Plus` (dead)
+- Grid `data-testid="budget-grid"` `grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3`
+- Empty: `.card` centered `text-sm font-medium text-text-muted` "No budgets this month — set your first budget" + dead primary CTA
+
+### BudgetCard — `components/budgets/BudgetCard.tsx`
+
+- Server presentational, `budget: MockBudget` prop; wrapper `.card flex flex-col gap-3` with `data-testid="budget-card"`
+- Header: 8px dot via inline `backgroundColor` + name `truncate text-sm font-medium leading-5 text-text-primary`
+- `spent / limit` line `text-sm tabular-nums text-text-secondary` via `formatCurrency()`
+- Bar: track `h-2 rounded-full bg-border-light`; fill `h-full rounded-full` + `bg-success` (<80%) / `bg-warning` (80–100%) / `bg-error` (>100%), width capped at 100%, `role="progressbar"` + `aria-valuenow` percent
+- Footer: remaining `text-xs leading-4 text-text-secondary` ("$X remaining") or over `text-xs font-medium leading-4 text-error` ("+$X over")
