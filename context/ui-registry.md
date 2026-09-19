@@ -231,3 +231,47 @@ After building any component — update this file with the component name, file 
 ### Budget view types — `components/budgets/types.ts`
 
 - `BudgetCategoryView { id, name, color }`, `BudgetView { id, categoryId, category, month, limit: number, spent: number }` — server maps Prisma `Decimal`/`_sum` (null→0) to this before passing to client
+
+### Dashboard page — `app/dashboard/page.tsx`
+
+- Server guard: `auth.api.getSession()` → `redirect("/login")` when null; `AppNavbar activePath="/dashboard"` + `userEmail`
+- Pure mocks, no Prisma/seeding (07 precedent); passes `lib/mockDashboard.ts` rows straight into `DashboardView` (all plain numbers, serializable)
+- `main`: `mx-auto flex w-full max-w-360 flex-col gap-6 px-8 py-8`
+
+### DashboardView — `components/dashboard/DashboardView.tsx`
+
+- Server shell: `stats/categorySpending/trend/budgetRows/recent/month` props; owns H1 "Dashboard" + muted subtitle + section stacking
+- Charts pair in `grid grid-cols-1 gap-6 xl:grid-cols-2`; wrapper `data-testid="dashboard-view"` + `flex flex-col gap-6`
+
+### StatCards — `components/dashboard/StatCards.tsx`
+
+- Server presentational, `stats: DashboardStats` prop; wrapper `data-testid="stat-cards"` + `grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4`
+- Each card `.card flex flex-col gap-1`: label `text-sm font-medium leading-5 text-text-secondary`, value `text-3xl font-semibold tabular-nums` (`text-success` income, `text-error` over-budget count when >0 else `text-text-primary`), sub `text-xs leading-4 text-text-muted`
+
+### CategoryChart — `components/dashboard/CategoryChart.tsx`
+
+- `"use client"` recharts; `data: CategorySpendingView[]` + `month` props; wrapper `.card flex flex-col gap-4` + `data-testid="category-chart"`
+- Heading "Spending by Category" + subtitle `text-xs text-text-muted` ("Expenses by category · {month}"); chart box `h-64 w-full` + `data-testid="category-chart-bars"` with `ResponsiveContainer` > `BarChart` (`Bar dataKey="total" fill="#7C5CFC" radius [8,8,0,0]`), grid dashed `#E7EAF3`, ticks 12px `#9CA3AF`, `Tooltip` via `formatCurrency()`
+- Empty: `text-sm font-medium text-text-muted` "No data this month — add a transaction…" (no chart)
+
+### TrendChart — `components/dashboard/TrendChart.tsx`
+
+- `"use client"` recharts; `data: MonthlyTrendView[]` prop; wrapper `.card flex flex-col gap-4` + `data-testid="trend-chart"`
+- Heading "Income vs Expense" + subtitle "Last 6 months"; custom legend dots (`#10B981` Income / `#7C5CFC` Expense) + `text-xs font-medium text-text-secondary`; lines box `h-64 w-full` + `data-testid="trend-chart-lines"` with `LineChart` (income `#10B981` / expense `#7C5CFC`, 3px, no dots), same grid/tick/Tooltip pattern
+- Empty: "No data yet — add a transaction…" (no lines)
+
+### BudgetVsActual — `components/dashboard/BudgetVsActual.tsx`
+
+- Server presentational, `rows: BudgetActualView[]` + `month` props; wrapper `.card flex flex-col gap-4` + `data-testid="budget-vs-actual"`
+- Heading "Budget vs Actual" + subtitle ("Monthly limits · {month}"); rows `ul flex flex-col gap-4`, `li data-testid="budget-vs-actual-row"` reusing `BudgetCard` bar pattern (track `h-2 rounded-full bg-border-light`, fill `bg-success` <80% / `bg-warning` 80–100% / `bg-error` >100% capped 100%, `role="progressbar"`; remaining `text-xs text-text-secondary` vs over `text-xs font-medium text-error`)
+- Empty: muted "No budgets this month…" + primary `Link` → `/budgets` ("Set a budget")
+
+### RecentTransactions — `components/dashboard/RecentTransactions.tsx`
+
+- Server presentational, `transactions: RecentTransactionView[]` prop; wrapper `.card flex flex-col gap-4` + `data-testid="recent-transactions"`
+- Header row: H2 + `Link` → `/transactions` ("View all", `text-accent hover:underline`); rows `li data-testid="recent-transaction-row"` (`flex justify-between border-b py-3 first:pt-0 last:border-0`): note `truncate text-sm font-medium` (empty → "Untitled") + date `text-xs text-text-muted tabular-nums`, category pill (hidden below `sm`, same chrome as `TransactionsTable`), signed amount (`+$` `text-success` / `-$` `text-text-primary`, `tabular-nums`)
+- Empty: muted "No transactions yet…" + primary `Link` → `/transactions`
+
+### Dashboard view types — `components/dashboard/types.ts`
+
+- `DashboardCategoryView { id, name, color }`, `DashboardStats { spent, income, balance, overBudgetCount }`, `CategorySpendingView { name, total, color }`, `MonthlyTrendView { month, income, expense }`, `BudgetActualView { id, categoryId, category, limit: number, spent: number }`, `RecentTransactionView { id, date, note, type, amount: number, categoryId, category }` — mocks already match, no mapping needed

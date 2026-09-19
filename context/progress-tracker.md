@@ -6,9 +6,9 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ## Current Status
 
-**Phase:** Phase 3 — Budgets
-**Last completed:** 08 Budget Logic
-**Next:** 09 Dashboard Page — Full UI
+**Phase:** Phase 4 — Dashboard + Reports
+**Last completed:** 09 Dashboard Page — Full UI
+**Next:** 10 Stats + Recent — Real Data
 
 ---
 
@@ -34,7 +34,7 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ### Phase 4 — Dashboard + Reports
 
-- [ ] 09 Dashboard Page — Full UI
+- [x] 09 Dashboard Page — Full UI (TDD, 19 new tests, 188 total): `app/dashboard/page.tsx` (server session guard → /login, pure mocks, no Prisma/seeding — 07 precedent), `components/dashboard/` (`StatCards` server 4-card grid, `CategoryChart`/`TrendChart` client recharts fed mock arrays, `BudgetVsActual` progress list reusing `BudgetCard` bar pattern, `RecentTransactions` 5-row list reusing table pill/amount pattern, `DashboardView` server shell, `types.ts` view types), `lib/mockDashboard.ts` (deterministic stats + 8 categories + 6-month trend + 5 budget rows + 5 recent). Per-section empty states; charts stack basic, full responsive stays in 12.
 - [ ] 10 Stats + Recent — Real Data
 - [ ] 11 Charts — Real Data (recharts)
 
@@ -85,6 +85,8 @@ Update this file after every completed feature. Any AI agent reading this should
 - 2026-09-19: 07 budgets UI-first over dynamic mocks (`MOCK_CURRENT_MONTH`/`MOCK_PREV_MONTH` derived from `monthKey(new Date())` so first paint always has data); `BudgetForm` deferred to 08 with dead Copy/Set buttons (04 precedent); `MockBudget` shape mirrors future `BudgetView` (plain numbers) for a clean 08 swap; progress fill `bg-success` <80% / `bg-warning` 80–100% / `bg-error` >100%, width capped at 100%.
 
 - 2026-09-19: 08 single shared `BudgetForm` whose submit always calls `upsertBudget` (unique key absorbs create vs edit; category select locked when editing so an edit can never fork a second row); `copyLastMonth({month})` derives source server-side, skip-existing, immediate run with pending + inline error; `lib/mockBudgets.ts` kept on disk but unwired (developer decision, against the 07 note); `shiftMonth` promoted to `lib/utils.ts`; `upsertBudgetSchema.limit` is `z.coerce.number()` (forms send strings, same as 05's amount).
+
+- 2026-09-19: 09 dashboard UI-only over `lib/mockDashboard.ts` (deterministic, `MOCK_DASHBOARD_MONTH` = current month so first paint always has data); real recharts components now (`CategoryChart` bars `#7C5CFC`, `TrendChart` lines `#10B981`/`#7C5CFC`, `ResponsiveContainer` + dashed `#E7EAF3` grid + 12px `#9CA3AF` ticks) so 11 is a data-swap; `BudgetVsActual` reuses `BudgetCard` bar thresholds without edit/delete; `RecentTransactions` reuses table pill/amount pattern with "View all" → `/transactions`; page has guard only, no seeding (07 precedent — 10 adds Prisma).
 
 _Add decisions here as they are made during implementation._
 
