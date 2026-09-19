@@ -1,41 +1,36 @@
-# Memory — 09 Dashboard Page Full UI
+# Memory — 10 Stats + Recent Real Data
 
 Last updated: 2026-09-19
 
 ## What was built
 
-- `lib/mockDashboard.ts` (+ test, 5 tests): deterministic mocks — `MOCK_DASHBOARD_STATS` (spent 2845.50 / income 5200 / balance 2354.50 / overBudgetCount 2), 8-category spending, 6-month income/expense trend (trailing months via `shiftMonth` from current), 5 budget-vs-actual rows (under/near/over/zero coverage), 5 recent transactions newest-first; `MOCK_DASHBOARD_MONTH` = current month so first paint always has data.
-- `components/dashboard/types.ts`: `DashboardCategoryView` / `DashboardStats` / `CategorySpendingView { name, total, color }` / `MonthlyTrendView { month, income, expense }` / `BudgetActualView` / `RecentTransactionView` (all plain numbers; mocks already match, no mapping needed).
-- `components/dashboard/StatCards.tsx` (+ test, 2 tests): server 4-card grid (`grid-cols-1 sm:2 xl:4`), label + `text-3xl font-semibold tabular-nums` value via `formatCurrency()` (`text-success` income, `text-error` over-budget count when >0) + muted subtitle.
-- `components/dashboard/CategoryChart.tsx` (+ test, 2 tests): `"use client"` recharts `BarChart` fed mock array (`Bar dataKey="total" fill="#7C5CFC"`, dashed `#E7EAF3` grid, 12px `#9CA3AF` ticks, `Tooltip` via `formatCurrency()`), heading + month subtitle, empty state instead of chart when `[]`.
-- `components/dashboard/TrendChart.tsx` (+ test, 2 tests): `"use client"` recharts `LineChart` with income `#10B981` / expense `#7C5CFC` 3px lines + custom legend dots, "Last 6 months" subtitle, empty state when `[]`.
-- `components/dashboard/BudgetVsActual.tsx` (+ test, 2 tests): server progress list reusing `BudgetCard` bar pattern (`bg-success` <80% / `bg-warning` 80–100% / `bg-error` >100%, capped 100%, `role="progressbar"`), remaining/over footer; empty state + primary `Link` → `/budgets`.
-- `components/dashboard/RecentTransactions.tsx` (+ test, 2 tests): server 5-row list reusing table pill/amount pattern (note + date, category pill hidden below `sm`, signed amount `text-success` income), "View all" → `/transactions`; empty state + CTA link.
-- `components/dashboard/DashboardView.tsx` (+ test, 2 tests): server shell (H1 + subtitle, stats, charts `xl:grid-cols-2` pair, budget list, recent).
-- `app/dashboard/page.tsx` (+ test, 2 tests): session guard → `/login`, `AppNavbar activePath="/dashboard"`, pure mocks, no Prisma/seeding (07 precedent).
-- Docs: `context/ui-registry.md` (8 dashboard entries), `context/progress-tracker.md` (09 checked, Phase 4 open, 1 new decision line).
+- `app/dashboard/page.tsx` (rewritten): seeds categories, then one `Promise.all` — EXPENSE + INCOME `aggregate` SUMs in current-month range, `budget.findMany` (user + month, `include category`) + EXPENSE `groupBy` spent per category for over-budget count, `transaction.findMany` (`orderBy date desc`, `take 5`, `include category`); `Decimal.toNumber()` + `Date→YYYY-MM-DD` + null-note→`""` mapping at boundary; live `stats` + `recent` into `DashboardView`, charts + budget list stay on chart-only mocks.
+- `app/dashboard/page.test.tsx` (2→4 tests): redirect without session; live stats + recent values when authed; Prisma scoping (userId, month range, `take: 5`, `orderBy`); zero-stats + recent empty state on null sums.
+- `lib/mockDashboard.ts` trimmed to chart-only mocks: `MOCK_DASHBOARD_STATS`, `MockRecentTransaction`, `MOCK_RECENT_TRANSACTIONS` deleted (kept `MOCK_DASHBOARD_MONTH` as trend anchor); `mockDashboard.test.ts` 5→3 tests.
+- `components/dashboard/DashboardView.test.tsx`: inline stats/recent fixtures instead of deleted mock imports.
+- Docs: `context/ui-registry.md` (dashboard page entry rewritten for live reads), `context/progress-tracker.md` (10 checked, Phase 4 down to 11, 1 new decision line).
 
 ## Decisions made
 
-- Real recharts components now (not placeholders) so 11 Charts is a data-swap; chart hexes live as recharts props per `library-docs.md`, not Tailwind classes.
-- `BudgetVsActual` reuses `BudgetCard` thresholds without edit/delete; `RecentTransactions` reuses table pill/amount pattern.
-- Page has guard only, no category seeding — 10 adds Prisma reads + seeding.
-- Basic chart stacking now (`xl:grid-cols-2`); full responsive polish stays in 12.
-- Skills used: architect (plan + blueprint, all 4 answers confirmed), tdd (vertical slices), tailwind-v4 (tokens only), review (0 issues, ready to ship).
+- Balance = current-month income minus current-month spent (not all-time — matches "This Month" subtitles; documented in progress-tracker per build-plan instruction).
+- Recent = latest 5 (not 8 — matches 09 UI, zero component changes).
+- Mock trim (not keep-unwired): stats + recent exports deleted outright, unlike the 08 `mockBudgets` precedent.
+- Zero section-component prop changes — `DashboardStats`/`RecentTransactionView` shapes already fit real data.
+- Skills used: architect (plan + blueprint, all 4 answers confirmed), tdd (RED→GREEN on page test), review (0 issues, ready to ship).
 
 ## Problems solved
 
-- None — no blockers. Recharts renders cleanly in jsdom when tests assert headings/testids rather than SVG internals (CategoryChart suite imports slowly ~18s, passes consistently).
+- None — no blockers. Page-test RED state (3 failing on still-mocked page) flipped GREEN with the rewrite; full suite holds at 188/188 (48 files: +2 page, −2 mock).
 
 ## Current state
 
-- `npm test`: 188/188 passing (48 files, +19 new this session). `typecheck`, `lint`, `npm run build` clean. Build shows `ƒ /dashboard` (dynamic, correct).
-- Phase 4: 09 done, dashboard fully mocked. Everything implemented and verified but uncommitted (01–09 now uncommitted).
+- `npm test`: 188/188 passing (48 files). `typecheck`, `lint`, `npm run build` clean. Build shows `ƒ /dashboard` (dynamic, correct).
+- Phase 4: 10 done — stats + recent live, charts + Budget-vs-Actual still mocked. Everything implemented and verified but uncommitted (01–10 now uncommitted).
 
 ## Next session starts with
 
-- Build 10 Stats + Recent — Real Data per `context/build-plan.md`: Spent/Income This Month (SUM by type in current month), Balance (month, document choice in progress-tracker), Over-Budget Count (budgets this month where spent > limit), Recent Transactions (latest 5–8 with category); seed categories on load; delete `lib/mockDashboard.ts` stats/recent usage (keep chart mocks until 11).
+- Build 11 Charts — Real Data per `context/build-plan.md`: Spending by Category (`groupBy categoryId` EXPENSE current month → `{ name, total }`), Income vs Expense (monthly sums last 6 months, `#10B981`/`#7C5CFC`), Budget vs Actual (budgets this month + live spent); `Decimal`→number at boundary; per-chart empty states; delete `lib/mockDashboard.ts` entirely once unwired.
 
 ## Open questions
 
-- None. 10 scope is fully specified in the build plan (only open point: Balance = month vs all-time — build-plan says pick month and document it).
+- None. 11 scope is fully specified in the build plan.

@@ -235,7 +235,9 @@ After building any component — update this file with the component name, file 
 ### Dashboard page — `app/dashboard/page.tsx`
 
 - Server guard: `auth.api.getSession()` → `redirect("/login")` when null; `AppNavbar activePath="/dashboard"` + `userEmail`
-- Pure mocks, no Prisma/seeding (07 precedent); passes `lib/mockDashboard.ts` rows straight into `DashboardView` (all plain numbers, serializable)
+- Calls `seedDefaultCategories()` before reads; month = `monthKey(new Date())` with local `monthRange()` (same shape as budgets/transactions pages)
+- One `Promise.all`: EXPENSE + INCOME `aggregate` SUMs in month range, `budget.findMany` (user + month, `include category`) + EXPENSE `groupBy` spent per category for the over-budget count, `transaction.findMany` (`orderBy date desc`, `take 5`, `include category`); `Decimal.toNumber()` + `Date→YYYY-MM-DD` + null-note→`""` mapping at boundary
+- Passes live `stats` + `recent` into `DashboardView`; charts + budget list stay on `lib/mockDashboard.ts` chart-only mocks until 11
 - `main`: `mx-auto flex w-full max-w-360 flex-col gap-6 px-8 py-8`
 
 ### DashboardView — `components/dashboard/DashboardView.tsx`

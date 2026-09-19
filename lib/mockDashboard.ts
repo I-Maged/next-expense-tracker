@@ -26,24 +26,7 @@ export type MockBudgetActual = {
   spent: number;
 };
 
-export type MockRecentTransaction = {
-  id: string;
-  date: string;
-  note: string;
-  type: "INCOME" | "EXPENSE";
-  amount: number;
-  categoryId: string;
-  category: MockDashboardCategory;
-};
-
 export const MOCK_DASHBOARD_MONTH: string = monthKey(new Date());
-
-export const MOCK_DASHBOARD_STATS = {
-  spent: 2845.5,
-  income: 5200,
-  balance: 2354.5,
-  overBudgetCount: 2,
-};
 
 const FOOD: MockDashboardCategory = {
   id: "mock-cat-food",
@@ -150,53 +133,5 @@ export const MOCK_BUDGET_VS_ACTUAL: Array<MockBudgetActual> = [
     category: HEALTH,
     limit: 150,
     spent: 0,
-  },
-];
-
-export const MOCK_RECENT_TRANSACTIONS: Array<MockRecentTransaction> = [
-  {
-    id: "mock-recent-01",
-    date: `${MOCK_DASHBOARD_MONTH}-14`,
-    note: "Monthly salary",
-    type: "INCOME",
-    amount: 5200,
-    categoryId: OTHER.id,
-    category: OTHER,
-  },
-  {
-    id: "mock-recent-02",
-    date: `${MOCK_DASHBOARD_MONTH}-13`,
-    note: "Weekly groceries",
-    type: "EXPENSE",
-    amount: 86.4,
-    categoryId: FOOD.id,
-    category: FOOD,
-  },
-  {
-    id: "mock-recent-03",
-    date: `${MOCK_DASHBOARD_MONTH}-12`,
-    note: "Rent payment",
-    type: "EXPENSE",
-    amount: 1500,
-    categoryId: RENT.id,
-    category: RENT,
-  },
-  {
-    id: "mock-recent-04",
-    date: `${MOCK_DASHBOARD_MONTH}-11`,
-    note: "Bus pass refill",
-    type: "EXPENSE",
-    amount: 45,
-    categoryId: TRANSPORT.id,
-    category: TRANSPORT,
-  },
-  {
-    id: "mock-recent-05",
-    date: `${MOCK_DASHBOARD_MONTH}-10`,
-    note: "Movie night",
-    type: "EXPENSE",
-    amount: 32.5,
-    categoryId: ENTERTAINMENT.id,
-    category: ENTERTAINMENT,
   },
 ];

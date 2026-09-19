@@ -5,21 +5,33 @@ import {
   MOCK_BUDGET_VS_ACTUAL,
   MOCK_CATEGORY_SPENDING,
   MOCK_DASHBOARD_MONTH,
-  MOCK_DASHBOARD_STATS,
   MOCK_INCOME_EXPENSE_TREND,
-  MOCK_RECENT_TRANSACTIONS,
 } from "@/lib/mockDashboard";
 import { DashboardView } from "@/components/dashboard/DashboardView";
+
+const STATS = { spent: 2845.5, income: 5200, balance: 2354.5, overBudgetCount: 1 };
+
+const RECENT = [
+  {
+    id: "tx_1",
+    date: "2026-09-14",
+    note: "Weekly groceries",
+    type: "EXPENSE" as const,
+    amount: 86.4,
+    categoryId: "cat_food",
+    category: { id: "cat_food", name: "Food", color: "#EF4444" },
+  },
+];
 
 describe("DashboardView", () => {
   it("renders the header and every dashboard section", () => {
     render(
       <DashboardView
-        stats={MOCK_DASHBOARD_STATS}
+        stats={STATS}
         categorySpending={MOCK_CATEGORY_SPENDING}
         trend={MOCK_INCOME_EXPENSE_TREND}
         budgetRows={MOCK_BUDGET_VS_ACTUAL}
-        recent={MOCK_RECENT_TRANSACTIONS}
+        recent={RECENT}
         month={MOCK_DASHBOARD_MONTH}
       />,
     );
