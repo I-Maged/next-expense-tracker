@@ -35,6 +35,7 @@ export function CategoryForm({ open, onClose, initial, onSuccess }: Props) {
       setFormError("Name can have max 40 characters");
       return;
     }
+    // State is a plain string; narrow to the palette tuple for includes.
     if (!CATEGORY_COLORS.includes(color as (typeof CATEGORY_COLORS)[number])) {
       setFormError("Choose a color");
       return;

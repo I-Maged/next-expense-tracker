@@ -27,7 +27,21 @@ export const deleteTransactionSchema = z.object({
 export const upsertBudgetSchema = z.object({
   categoryId: z.string().min(1),
   month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Use YYYY-MM"),
-  limit: z.number().positive().max(999999999.99),
+  limit: z.coerce
+    .number()
+    .positive()
+    .max(999999999.99)
+    .refine((n) => Math.round(n * 100) === n * 100, {
+      message: "Max 2 decimals",
+    }),
+});
+
+export const deleteBudgetSchema = z.object({
+  id: z.string().min(1),
+});
+
+export const copyLastMonthSchema = z.object({
+  month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Use YYYY-MM"),
 });
 
 export const categorySchema = z.object({

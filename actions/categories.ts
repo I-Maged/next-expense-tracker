@@ -26,6 +26,7 @@ const SEED_COLORS: Record<string, string> = {
 type ActionResult = { success: true } | { success: false; error: string };
 
 function isUniqueViolation(error: unknown): boolean {
+  // Prisma throws unknown-shaped errors; narrow to code without importing client internals.
   return (
     typeof error === "object" &&
     error !== null &&

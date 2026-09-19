@@ -18,6 +18,12 @@ export function monthKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
 
+export function shiftMonth(month: string, delta: number): string {
+  const year = Number(month.slice(0, 4));
+  const index = Number(month.slice(5, 7)) - 1 + delta;
+  return monthKey(new Date(year, index, 1));
+}
+
 export const DEFAULT_CATEGORIES = [
   "Food",
   "Transport",

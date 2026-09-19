@@ -6,6 +6,7 @@ import {
   cn,
   formatCurrency,
   monthKey,
+  shiftMonth,
 } from "@/lib/utils";
 
 describe("cn", () => {
@@ -26,6 +27,15 @@ describe("monthKey", () => {
     expect(monthKey(new Date(2026, 0, 15))).toBe("2026-01");
     expect(monthKey(new Date(2026, 8, 18))).toBe("2026-09");
     expect(monthKey(new Date(2026, 11, 31))).toBe("2026-12");
+  });
+});
+
+describe("shiftMonth", () => {
+  it("shifts months across year boundaries", () => {
+    expect(shiftMonth("2026-09", -1)).toBe("2026-08");
+    expect(shiftMonth("2026-09", 1)).toBe("2026-10");
+    expect(shiftMonth("2026-01", -1)).toBe("2025-12");
+    expect(shiftMonth("2026-12", 1)).toBe("2027-01");
   });
 });
 

@@ -1,36 +1,40 @@
-# Memory — 07 Budgets Page (Full UI)
+# Memory — 08 Budget Logic
 
 Last updated: 2026-09-19
 
 ## What was built
 
-- `lib/mockBudgets.ts` (+ test, 3 tests): `MockBudget { id, categoryId, category, month, limit, spent }` (plain numbers, mirrors future `BudgetView`), 7 deterministic rows — 5 in `MOCK_CURRENT_MONTH` (under/near/at/over/zero spent) + 2 in `MOCK_PREV_MONTH`; months derived from `monthKey(new Date())` so first paint always has data.
-- `components/budgets/BudgetCard.tsx` (+ test, 4 tests): server presentational — dot + name, `spent / limit` via `formatCurrency()`, `h-2` progress bar (`bg-success` <80% / `bg-warning` 80–100% / `bg-error` >100%, width capped 100%, labelled `progressbar`), remaining (`text-text-secondary`) or `+$X over` (`text-error`).
-- `components/budgets/BudgetsView.tsx` (+ test, 5 tests): `"use client"` shell — month `useState` defaulting to current, client-side month filter (URL params deferred to 08), header (H1 + month picker + dead secondary Copy Last Month + dead primary Set Budget), `budget-grid` (`md:grid-cols-2 xl:grid-cols-3`), empty state + dead CTA.
-- `app/settings/page.tsx` equivalent for budgets — `app/budgets/page.tsx` (+ test, 2 tests): session guard → `/login`, pure mocks (no Prisma/seeding), `AppNavbar activePath="/budgets"`.
-- Docs: `context/ui-registry.md` (3 new entries), `context/progress-tracker.md` (07 checked, Phase 3 opened, 1 new decision line).
+- `actions/budgets.ts` (+ test, 12 tests): `upsertBudget` (session + zod + category-ownership + find-then-create/update, `P2002` race falls back to update), `deleteBudget` (ownership + delete, "Budget not found"), `copyLastMonth({month})` (source derived server-side via `shiftMonth`, skip-existing + `skipDuplicates`, returns `{copied, skipped}`, "No budgets in <month> to copy" when source empty); `revalidatePath("/budgets")` + `("/dashboard")`, never throws.
+- `components/budgets/types.ts`: `BudgetCategoryView` / `BudgetView { id, categoryId, category, month, limit: number, spent: number }` (server maps Prisma `Decimal`/`_sum` null→0 at boundary).
+- `components/budgets/BudgetForm.tsx` (+ test, 6 tests): one dialog form for create + edit (`initial` prop, category select locked `disabled` on edit so edits can't fork rows, limit `inputMode="decimal"` + `autoFocus`, client checks + server error `role="alert"`), always submits `upsertBudget({categoryId, month, limit})`.
+- `components/budgets/DeleteBudgetDialog.tsx` (+ test, 3 tests): confirm with month/name/limit summary, danger Delete, server error `role="alert"`.
+- `components/budgets/BudgetCard.tsx` (+2 tests): ghost Pencil/Trash2 buttons (`aria-label="Edit|Delete budget <id>"`, optional `onEdit`/`onDelete`, render fine without); header restructured to justify-between.
+- `components/budgets/BudgetsView.tsx` (rewritten, 8 tests): URL-driven shell (`month` prop, `router.push` new query, current-month default deleted), immediate Copy with "Copying…" pending + `role="alert"` error, dialogs remounted via `key`, success calls `router.refresh()`.
+- `app/budgets/page.tsx` (rewritten, 4 tests): awaits `searchParams` month (defaults current), seeds categories, Prisma categories + month budgets + live EXPENSE `groupBy` spent in month range.
+- Follow-up fix: `why` comments added to all three uncommented type assertions (`isUniqueViolation` in `actions/budgets.ts` + `actions/categories.ts`, palette `includes` in `CategoryForm.tsx`) — closes the style debt flagged in the 06 and 08 reviews.
+- Docs: `context/ui-registry.md` (6 entries rewritten/added), `context/progress-tracker.md` (08 checked, Phase 3 nearly done, 1 new decision line).
 
 ## Decisions made
 
-- BudgetForm deferred to 08 with dead Copy/Set buttons — 04 precedent (forms arrive with the logic phase).
-- UI-first over dynamic mocks (not fixed month pools) so the page never first-paints empty as calendar time moves.
-- `MockBudget` shape mirrors future `BudgetView` for a clean 08 swap (server maps Prisma + live spent at boundary).
-- Progress thresholds locked: green <80%, orange 80–100%, red >100%; track `bg-border-light`; over-budget carried by red bar + red text only (no extra border).
-- Skills used: architect (plan + blueprint, all 3 answers confirmed), tdd (vertical slices), tailwind-v4 (token-only classes), review (0 issues).
+- Single shared `BudgetForm` whose submit always calls `upsertBudget`; category locked on edit (06/08 review aftermath: assertion comments now required inline, debt closed).
+- `copyLastMonth` derives source month server-side, skip-existing, immediate run with pending + inline error (no confirm — non-destructive).
+- `lib/mockBudgets.ts` kept on disk but unwired (developer decision, against the 07 note).
+- `shiftMonth` promoted to `lib/utils.ts` next to `monthKey`; `upsertBudgetSchema.limit` is `z.coerce.number()` (forms send strings, same as 05's amount).
+- Skills used: architect (plan + blueprint, all 4 answers confirmed), tdd (vertical slices), tailwind-v4 (no visual changes), review (1 minor → fixed same session).
 
 ## Problems solved
 
-- None — no blockers this session. Fixed-month mock pools (04's `MONTH_POOL`) would have left the budgets page permanently empty-state once the calendar moved past them; solved by deriving mock months from the current date.
+- None — no blockers. Upsert race handled the same way as categories (`P2002` → re-read + update) instead of a separate code path.
 
 ## Current state
 
-- `npm test`: 138/138 passing (37 files, +14 new this session). `typecheck`, `lint`, `npm run build` clean. Build shows `ƒ /budgets` (dynamic via session guard, correct).
-- Phase 3 opened: 07 done. Everything implemented and verified but uncommitted (01–07 now uncommitted).
+- `npm test`: 169/169 passing (40 files, +31 new this session). `typecheck`, `lint`, `npm run build` clean. Build shows `ƒ /budgets` (dynamic, correct).
+- Phase 3: 08 done, budgets fully wired. Everything implemented and verified but uncommitted (01–08 now uncommitted).
 
 ## Next session starts with
 
-- Build 08 Budget Logic per `context/build-plan.md`: `actions/budgets.ts` (upsert one-per-category-per-month, delete, copy-last-month), `spent` aggregated live from EXPENSE transactions in the selected month (never stored), `BudgetForm` dialog wired to Set Budget buttons, URL-driven month (`?month=`, default current), `revalidatePath("/budgets")` + `("/dashboard")`; retire `lib/mockBudgets.ts` with the mocks.
+- Build 09 Dashboard Page — Full UI per `context/build-plan.md`: four stat cards (Spent/Income/Balance/Over-Budget mock numbers), Spending by Category bar chart (mock), Income vs Expense line chart (mock 6 months), Budget vs Actual progress list (mock), Recent Transactions list (mock), empty states; mock-data UI first, no logic (10/11 wire it).
 
 ## Open questions
 
-- None. 08 scope is fully specified in the build plan.
+- None. 09 scope is fully specified in the build plan.

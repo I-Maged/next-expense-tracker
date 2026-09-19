@@ -201,20 +201,33 @@ After building any component — update this file with the component name, file 
 ### Budgets page — `app/budgets/page.tsx`
 
 - Server guard: `auth.api.getSession()` → `redirect("/login")` when null; `AppNavbar activePath="/budgets"` + `userEmail`
-- No Prisma, no seeding (pure mocks like 04) — passes `MOCK_BUDGETS` to `BudgetsView`
-- `main`: `mx-auto flex w-full max-w-360 flex-col gap-6 px-8 py-8`
+- Calls `seedDefaultCategories()` before reads; reads `searchParams` (`month`, defaults to `monthKey(new Date())`); Prisma `category.findMany` (user-scoped, `orderBy name asc`) + `budget.findMany` (user + month, `include category`) + `transaction.groupBy` (`by categoryId`, EXPENSE in month `gte/lt`, `_sum amount`); `Decimal.toNumber()` + `_sum` null→0 mapping at boundary
+- `main`: `mx-auto flex w-full max-w-360 flex-col gap-6 px-8 py-8`; renders `BudgetsView` with `BudgetView` rows + `BudgetCategoryView` list + month
 
 ### BudgetsView — `components/budgets/BudgetsView.tsx`
 
-- `"use client"` shell: `budgets: MockBudget[]` prop; month `useState` defaulting to `monthKey(new Date())`, filters rows client-side (URL params deferred to 08)
-- Header: H1 "Budgets" + "Set monthly limits and stay on track."; `Month` (`budgets-month`, `type="month"`) + secondary "Copy Last Month" (dead) + primary "Set Budget" with `Plus` (dead)
+- `"use client"` URL-driven shell: server-provided `budgets/categories/month` props; month change `router.push` new query (deleted when current month); owns header row (H1 + month picker + Copy + Set buttons) + `BudgetForm` (`key` by editing id or `"new"`/`"form-closed"`) + `DeleteBudgetDialog` (`key` by deleting id); success calls `router.refresh()`
+- Copy Last Month: secondary `Button`, immediate `copyLastMonth({month})` with "Copying…" pending + `role="alert"` error, `router.refresh()` on success
 - Grid `data-testid="budget-grid"` `grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3`
-- Empty: `.card` centered `text-sm font-medium text-text-muted` "No budgets this month — set your first budget" + dead primary CTA
+- Empty: `.card` centered `text-sm font-medium text-text-muted` "No budgets this month — set your first budget" + primary CTA opening the form
 
 ### BudgetCard — `components/budgets/BudgetCard.tsx`
 
-- Server presentational, `budget: MockBudget` prop; wrapper `.card flex flex-col gap-3` with `data-testid="budget-card"`
-- Header: 8px dot via inline `backgroundColor` + name `truncate text-sm font-medium leading-5 text-text-primary`
+- Server presentational, `budget: BudgetView` prop + optional `onEdit`/`onDelete` callbacks (buttons still render without callbacks); wrapper `.card flex flex-col gap-3` with `data-testid="budget-card"`
+- Header: 8px dot via inline `backgroundColor` + name `truncate text-sm font-medium leading-5 text-text-primary` + ghost icon buttons (`Pencil`/`Trash2` `h-4 w-4`, `rounded-md p-2`, edit hover `text-text-primary`, delete hover `text-error`), `aria-label="Edit|Delete budget <id>"`
 - `spent / limit` line `text-sm tabular-nums text-text-secondary` via `formatCurrency()`
 - Bar: track `h-2 rounded-full bg-border-light`; fill `h-full rounded-full` + `bg-success` (<80%) / `bg-warning` (80–100%) / `bg-error` (>100%), width capped at 100%, `role="progressbar"` + `aria-valuenow` percent
 - Footer: remaining `text-xs leading-4 text-text-secondary` ("$X remaining") or over `text-xs font-medium leading-4 text-error` ("+$X over")
+
+### BudgetForm — `components/budgets/BudgetForm.tsx`
+
+- `"use client"` dialog form: `open/onClose/categories/month/initial/onSuccess` props; category select (`budget-category`, locked `disabled` when editing) + `Monthly limit` (`budget-limit`, `inputMode="decimal"`, `autoFocus`, placeholder "0.00")
+- Client checks (category chosen, limit > 0, max 2 decimals) then `upsertBudget({categoryId, month, limit})`; errors `text-sm text-error` with `role="alert"`; submit pending "Saving…" / "Save changes" vs "Set budget"; Cancel secondary
+
+### DeleteBudgetDialog — `components/budgets/DeleteBudgetDialog.tsx`
+
+- `"use client"` confirm: `open/onClose/budget/onSuccess` props; summary `"Delete the <month> budget for "<name>" (<limit>)? This cannot be undone.`; danger `Delete` (pending "Deleting…") calls `deleteBudget({id})`; errors `role="alert"`; Cancel secondary
+
+### Budget view types — `components/budgets/types.ts`
+
+- `BudgetCategoryView { id, name, color }`, `BudgetView { id, categoryId, category, month, limit: number, spent: number }` — server maps Prisma `Decimal`/`_sum` (null→0) to this before passing to client

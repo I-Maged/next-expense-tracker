@@ -1,4 +1,4 @@
-import { monthKey } from "@/lib/utils";
+import { monthKey, shiftMonth } from "@/lib/utils";
 
 export type MockBudgetCategory = {
   id: string;
@@ -44,13 +44,6 @@ const HEALTH: MockBudgetCategory = {
   name: "Health",
   color: "#10B981",
 };
-
-function shiftMonth(month: string, delta: number): string {
-  const year = Number(month.slice(0, 4));
-  const index = Number(month.slice(5, 7)) - 1 + delta;
-  const shifted = new Date(year, index, 1);
-  return monthKey(shifted);
-}
 
 export const MOCK_CURRENT_MONTH: string = monthKey(new Date());
 export const MOCK_PREV_MONTH: string = shiftMonth(MOCK_CURRENT_MONTH, -1);

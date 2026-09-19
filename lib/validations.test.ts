@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import {
   categorySchema,
+  copyLastMonthSchema,
   createCategorySchema,
   createTransactionSchema,
+  deleteBudgetSchema,
   deleteCategorySchema,
   updateCategorySchema,
   upsertBudgetSchema,
@@ -87,6 +89,47 @@ describe("upsertBudgetSchema", () => {
     expect(
       upsertBudgetSchema.safeParse({ ...base, categoryId: "" }).success,
     ).toBe(false);
+  });
+
+  it("coerces string limits and rejects extra decimals", () => {
+    const parsed = upsertBudgetSchema.safeParse({
+      categoryId: "cat_1",
+      month: "2026-09",
+      limit: "500.50",
+    });
+
+    expect(parsed.success).toBe(true);
+    if (parsed.success) expect(parsed.data.limit).toBe(500.5);
+    expect(
+      upsertBudgetSchema.safeParse({
+        categoryId: "cat_1",
+        month: "2026-09",
+        limit: "10.999",
+      }).success,
+    ).toBe(false);
+  });
+});
+
+describe("deleteBudgetSchema", () => {
+  it("accepts an id and rejects blank ids", () => {
+    expect(deleteBudgetSchema.safeParse({ id: "bud_1" }).success).toBe(true);
+    expect(deleteBudgetSchema.safeParse({ id: "" }).success).toBe(false);
+    expect(deleteBudgetSchema.safeParse({}).success).toBe(false);
+  });
+});
+
+describe("copyLastMonthSchema", () => {
+  it("accepts YYYY-MM and rejects anything else", () => {
+    expect(copyLastMonthSchema.safeParse({ month: "2026-09" }).success).toBe(
+      true,
+    );
+    expect(copyLastMonthSchema.safeParse({ month: "2026-13" }).success).toBe(
+      false,
+    );
+    expect(copyLastMonthSchema.safeParse({ month: "Sep 2026" }).success).toBe(
+      false,
+    );
+    expect(copyLastMonthSchema.safeParse({}).success).toBe(false);
   });
 });
 
