@@ -125,25 +125,24 @@ After building any component — update this file with the component name, file 
 ### Transactions page — `app/transactions/page.tsx`
 
 - Server guard: `auth.api.getSession()` → `redirect("/login")` when null; `AppNavbar activePath="/transactions"` + `userEmail`
-- `main`: `mx-auto flex w-full max-w-360 flex-col gap-6 px-8 py-8`; header row `flex items-center justify-between gap-4`
-- H1 `text-2xl font-semibold leading-8 text-text-primary` ("Transactions"), sub `mt-1 text-sm font-medium leading-5 text-text-secondary`
-- Add button: primary `Button className="inline-flex items-center"` + lucide `Plus` (`mr-2 h-4 w-4`), dead until 05
-- Renders `TransactionsView` with `MOCK_TRANSACTIONS` / `MOCK_CATEGORIES` from `lib/mockTransactions.ts` (48 deterministic rows, 8 categories, `YYYY-MM-DD` dates across 2026-07/08/09)
+- Calls `seedDefaultCategories()` before reads (8 defaults only when zero)
+- Reads `searchParams` (`search/category/type/month/page`), defaults month to `monthKey(new Date())`, page to 1; Prisma `count` + `findMany` scoped by `userId` (month range `gte/lt`, category, type, note `contains insensitive`, `orderBy date desc`, `take/skip` 20); `Decimal.toNumber()` + `YYYY-MM-DD` mapping at boundary
+- `main`: `mx-auto flex w-full max-w-360 flex-col gap-6 px-8 py-8`; renders `TransactionsView` with paged `TransactionView` rows + `CategoryView` list + pagination numbers
 
 ### TransactionFilters — `components/transactions/TransactionFilters.tsx`
 
-- `"use client"` controlled component: `search/categoryId/typeFilter/month` values + `onXChange` callbacks, `categories` prop
+- `"use client"` controlled component: `search/categoryId/typeFilter/month` values + `onXChange` callbacks, `categories: CategoryView[]` prop (05: same shape as mocks, real DB rows)
 - Wrapper `.card` + `grid grid-cols-1 gap-4 md:grid-cols-4`; `Label` + `Input`/`select` pairs (`transaction-search` placeholder "Search notes...", `transaction-category` with "All categories" + 8, `transaction-type` All/Income/Expense, `transaction-month` `type="month"`); selects `w-full` (base chrome from globals.css)
 
 ### TransactionsTable — `components/transactions/TransactionsTable.tsx`
 
-- Server presentational, `transactions` prop; wrapper `card overflow-x-auto p-0`, `table w-full border-collapse text-left` + `data-testid="transactions-table"`
+- Server presentational, `transactions: TransactionView[]` prop + optional `onEdit`/`onDelete` row callbacks (05: wired to dialogs; buttons still render without callbacks) wrapper `card overflow-x-auto p-0`, `table w-full border-collapse text-left` + `data-testid="transactions-table"`
 - Headers: `px-4 py-3 text-xs font-medium uppercase tracking-wide text-text-secondary`, Amount/Actions `text-right`
 - Rows `border-b border-border last:border-0 hover:bg-surface-secondary`; date `whitespace-nowrap tabular-nums`; empty note renders muted "—"
 - Category pill `inline-flex items-center gap-2 rounded-full bg-surface-secondary px-2 py-0.5 text-xs font-medium text-text-secondary` + 8px dot via inline `backgroundColor`
 - Type pill: Income `bg-success-lightest text-success-foreground`, Expense `bg-surface-secondary text-text-secondary`
 - Amount `text-right tabular-nums whitespace-nowrap`, `+`/`-` prefix + `formatCurrency()`; Income `text-success`, Expense `text-text-primary`
-- Actions: dead ghost icon buttons (`Pencil`/`Trash2` `h-4 w-4`, `rounded-md p-2`, hover `text-error` on delete), `aria-label="Edit|Delete transaction <id>"`
+- Actions: ghost icon buttons (`Pencil`/`Trash2` `h-4 w-4`, `rounded-md p-2`, hover `text-error` on delete), `aria-label="Edit|Delete transaction <id>"`, call `onEdit`/`onDelete` when provided
 
 ### TransactionsPagination — `components/transactions/TransactionsPagination.tsx`
 
@@ -152,7 +151,24 @@ After building any component — update this file with the component name, file 
 
 ### TransactionsView — `components/transactions/TransactionsView.tsx`
 
-- `"use client"` orchestrator: `transactions/categories` props, `useState` for search/category/type/month/page (month defaults to "" = all months so all 48 show; 05 will default to current month on real queries)
-- `useMemo` filter (case-insensitive note includes, exact category/type, `date.startsWith(month)`), resets page to 1 on any filter change; slices by `TRANSACTIONS_PER_PAGE`
-- Empty (`transactions=[]`): `.card` centered `text-sm font-medium text-text-muted` "No transactions yet — add your first transaction" + primary dead CTA
-- No-results: same shell, "No transactions match these filters." + secondary "Clear filters" (resets all)
+- `"use client"` URL-driven shell: server-provided `transactions/categories/total/page/totalPages/start/end/search/categoryId/typeFilter/month` props; filter changes `router.push` new query (defaults deleted, `page` reset), pagination sets `?page=` (deleted when 1)
+- Owns header row (H1 + Add `Button` with `Plus`) + `TransactionForm` (`key` by editing id or `"new"`/`"closed"`) + `DeleteTransactionDialog` (`key` by deleting id); success calls `router.refresh()`
+- Empty (`total=0`, no active filters): `.card` centered `text-sm font-medium text-text-muted` "No transactions yet — add your first transaction" + primary CTA opening the form
+- No-results (`total=0` with search/category/type active): same shell, "No transactions match these filters." + secondary "Clear filters" (keeps month, drops rest)
+
+### Dialog — `components/ui/dialog.tsx`
+
+- `"use client"` hand-rolled (no radix dep): `open/onClose/title/children` props, `null` when closed; overlay `fixed inset-0 z-50 flex items-center justify-center bg-overlay/60 p-4` (`data-testid="dialog-overlay"`, backdrop-click close), panel `.card w-full max-w-md` with `role="dialog" aria-modal` + H2 `text-base font-semibold leading-6 text-text-primary`; Escape closes via `keydown` listener
+
+### TransactionForm — `components/transactions/TransactionForm.tsx`
+
+- `"use client"` dialog form: `open/onClose/categories/initial/onSuccess` props; type toggle `Expense`/`Income` (`role="group" aria-label="Type"`, `aria-pressed`, Expense default); `Amount` (`transaction-amount`, `inputMode="decimal"`, `autoFocus`, placeholder "0.00"), category select (`transaction-form-category`), date (`transaction-form-date`, `type="date"`, `max` today), note (`transaction-form-note`, `maxLength` 200)
+- Client checks (amount > 0, max 2 decimals, category chosen, date ≤ today, note ≤ 200) then `createTransaction` or `updateTransaction({id})`; errors `text-sm text-error` with `role="alert"`; submit pending "Saving…" / "Save changes" vs "Add transaction"; Cancel secondary
+
+### DeleteTransactionDialog — `components/transactions/DeleteTransactionDialog.tsx`
+
+- `"use client"` confirm: `open/onClose/transaction/onSuccess` props; summary `"Delete "<note>" (<sign><amount>)? This cannot be undone.` (empty note → "Untitled"); danger `Delete` (pending "Deleting…") calls `deleteTransaction({id})`; errors `role="alert"`; Cancel secondary
+
+### Transaction view types — `components/transactions/types.ts`
+
+- `CategoryView { id, name, color }`, `TransactionView { id, date: YYYY-MM-DD, note, type, amount: number, categoryId, category }` — server maps Prisma `Decimal`/`DateTime`/nullable note to this before passing to client

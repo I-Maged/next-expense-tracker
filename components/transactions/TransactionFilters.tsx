@@ -2,7 +2,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { MockCategory } from "@/lib/mockTransactions";
+import type { CategoryView } from "@/components/transactions/types";
 
 export type TransactionTypeFilter = "ALL" | "INCOME" | "EXPENSE";
 
@@ -15,7 +15,7 @@ type Props = {
   onTypeChange: (value: TransactionTypeFilter) => void;
   month: string;
   onMonthChange: (value: string) => void;
-  categories: Array<MockCategory>;
+  categories: Array<CategoryView>;
 };
 
 export function TransactionFilters({

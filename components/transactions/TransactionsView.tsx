@@ -1,126 +1,198 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import type { MockCategory, MockTransaction } from "@/lib/mockTransactions";
-import { TRANSACTIONS_PER_PAGE } from "@/lib/utils";
 import { TransactionFilters } from "@/components/transactions/TransactionFilters";
 import type { TransactionTypeFilter } from "@/components/transactions/TransactionFilters";
 import { TransactionsPagination } from "@/components/transactions/TransactionsPagination";
 import { TransactionsTable } from "@/components/transactions/TransactionsTable";
+import { TransactionForm } from "@/components/transactions/TransactionForm";
+import { DeleteTransactionDialog } from "@/components/transactions/DeleteTransactionDialog";
+import type {
+  CategoryView,
+  TransactionView,
+} from "@/components/transactions/types";
 
 type Props = {
-  transactions: Array<MockTransaction>;
-  categories: Array<MockCategory>;
+  transactions: Array<TransactionView>;
+  categories: Array<CategoryView>;
+  total: number;
+  page: number;
+  totalPages: number;
+  start: number;
+  end: number;
+  search: string;
+  categoryId: string;
+  typeFilter: TransactionTypeFilter;
+  month: string;
 };
 
-export function TransactionsView({ transactions, categories }: Props) {
-  const [search, setSearch] = useState("");
-  const [categoryId, setCategoryId] = useState("all");
-  const [typeFilter, setTypeFilter] = useState<TransactionTypeFilter>("ALL");
-  const [month, setMonth] = useState("");
-  const [page, setPage] = useState(1);
+export function TransactionsView({
+  transactions,
+  categories,
+  total,
+  page,
+  totalPages,
+  start,
+  end,
+  search,
+  categoryId,
+  typeFilter,
+  month,
+}: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<TransactionView | null>(null);
+  const [deleting, setDeleting] = useState<TransactionView | null>(null);
 
-  const filtered = useMemo(
-    () =>
-      transactions.filter((transaction) => {
-        if (
-          search.trim() !== "" &&
-          !transaction.note.toLowerCase().includes(search.trim().toLowerCase())
-        ) {
-          return false;
-        }
-        if (categoryId !== "all" && transaction.categoryId !== categoryId) {
-          return false;
-        }
-        if (typeFilter !== "ALL" && transaction.type !== typeFilter) {
-          return false;
-        }
-        if (month !== "" && !transaction.date.startsWith(month)) {
-          return false;
-        }
-        return true;
-      }),
-    [transactions, search, categoryId, typeFilter, month],
-  );
-
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filtered.length / TRANSACTIONS_PER_PAGE),
-  );
-  const safePage = Math.min(page, totalPages);
-  const start =
-    filtered.length === 0 ? 0 : (safePage - 1) * TRANSACTIONS_PER_PAGE + 1;
-  const end = Math.min(safePage * TRANSACTIONS_PER_PAGE, filtered.length);
-  const paged = filtered.slice(start - 1, end);
-
-  function handleClearFilters(): void {
-    setSearch("");
-    setCategoryId("all");
-    setTypeFilter("ALL");
-    setMonth("");
-    setPage(1);
+  function pushQuery(next: Record<string, string | undefined>): void {
+    const params = new URLSearchParams(searchParams.toString());
+    for (const [key, value] of Object.entries(next)) {
+      if (value === undefined || value === "") {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    }
+    const query = params.toString();
+    router.push(query === "" ? pathname : `${pathname}?${query}`);
   }
 
-  if (transactions.length === 0) {
-    return (
-      <div className="card flex flex-col items-center gap-4 text-center">
-        <p className="text-sm font-medium text-text-muted">
-          No transactions yet — add your first transaction
-        </p>
-        <Button>Add your first transaction</Button>
-      </div>
-    );
+  function pushFilter(next: {
+    search?: string;
+    categoryId?: string;
+    typeFilter?: string;
+    month?: string;
+  }): void {
+    pushQuery({ ...next, page: undefined });
+  }
+
+  function handleClearFilters(): void {
+    pushQuery({
+      search: undefined,
+      categoryId: undefined,
+      typeFilter: undefined,
+      page: undefined,
+    });
+  }
+
+  const filtersActive =
+    search.trim() !== "" || categoryId !== "all" || typeFilter !== "ALL";
+
+  function openAdd(): void {
+    setEditing(null);
+    setFormOpen(true);
   }
 
   return (
     <div className="flex flex-col gap-6">
-      <TransactionFilters
-        search={search}
-        onSearchChange={(value) => {
-          setSearch(value);
-          setPage(1);
-        }}
-        categoryId={categoryId}
-        onCategoryChange={(value) => {
-          setCategoryId(value);
-          setPage(1);
-        }}
-        typeFilter={typeFilter}
-        onTypeChange={(value) => {
-          setTypeFilter(value);
-          setPage(1);
-        }}
-        month={month}
-        onMonthChange={(value) => {
-          setMonth(value);
-          setPage(1);
-        }}
-        categories={categories}
-      />
-      {filtered.length === 0 ? (
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold leading-8 text-text-primary">
+            Transactions
+          </h1>
+          <p className="mt-1 text-sm font-medium leading-5 text-text-secondary">
+            Track every dollar in and out.
+          </p>
+        </div>
+        <Button className="inline-flex items-center" onClick={openAdd}>
+          <Plus aria-hidden="true" className="mr-2 h-4 w-4" />
+          Add Transaction
+        </Button>
+      </div>
+
+      {total === 0 && !filtersActive ? (
         <div className="card flex flex-col items-center gap-4 text-center">
           <p className="text-sm font-medium text-text-muted">
-            No transactions match these filters.
+            No transactions yet — add your first transaction
           </p>
-          <Button variant="secondary" onClick={handleClearFilters}>
-            Clear filters
-          </Button>
+          <Button onClick={openAdd}>Add your first transaction</Button>
         </div>
       ) : (
         <>
-          <TransactionsTable transactions={paged} />
-          <TransactionsPagination
-            page={safePage}
-            totalPages={totalPages}
-            total={filtered.length}
-            start={start}
-            end={end}
-            onPageChange={setPage}
+          <TransactionFilters
+            search={search}
+            onSearchChange={(value) => {
+              pushFilter({ search: value });
+            }}
+            categoryId={categoryId}
+            onCategoryChange={(value) => {
+              pushFilter({ categoryId: value === "all" ? undefined : value });
+            }}
+            typeFilter={typeFilter}
+            onTypeChange={(value) => {
+              pushFilter({ typeFilter: value === "ALL" ? undefined : value });
+            }}
+            month={month}
+            onMonthChange={(value) => {
+              pushFilter({ month: value });
+            }}
+            categories={categories}
           />
+          {total === 0 ? (
+            <div className="card flex flex-col items-center gap-4 text-center">
+              <p className="text-sm font-medium text-text-muted">
+                No transactions match these filters.
+              </p>
+              <Button variant="secondary" onClick={handleClearFilters}>
+                Clear filters
+              </Button>
+            </div>
+          ) : (
+            <>
+              <TransactionsTable
+                transactions={transactions}
+                onEdit={(transaction) => {
+                  setEditing(transaction);
+                  setFormOpen(true);
+                }}
+                onDelete={setDeleting}
+              />
+              <TransactionsPagination
+                page={page}
+                totalPages={totalPages}
+                total={total}
+                start={start}
+                end={end}
+                onPageChange={(nextPage) => {
+                  pushQuery({
+                    page: nextPage <= 1 ? undefined : String(nextPage),
+                  });
+                }}
+              />
+            </>
+          )}
         </>
       )}
+
+      <TransactionForm
+        key={formOpen ? (editing?.id ?? "new") : "form-closed"}
+        open={formOpen}
+        onClose={() => {
+          setFormOpen(false);
+        }}
+        categories={categories}
+        initial={editing}
+        onSuccess={() => {
+          router.refresh();
+        }}
+      />
+      <DeleteTransactionDialog
+        key={deleting?.id ?? "delete-closed"}
+        open={deleting !== null}
+        onClose={() => {
+          setDeleting(null);
+        }}
+        transaction={deleting}
+        onSuccess={() => {
+          router.refresh();
+        }}
+      />
     </div>
   );
 }

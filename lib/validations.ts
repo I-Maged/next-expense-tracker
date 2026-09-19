@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const createTransactionSchema = z.object({
   type: z.enum(["INCOME", "EXPENSE"]),
-  amount: z
+  amount: z.coerce
     .number()
     .positive()
     .max(999999999.99)
@@ -10,8 +10,18 @@ export const createTransactionSchema = z.object({
       message: "Max 2 decimals",
     }),
   categoryId: z.string().min(1),
-  date: z.coerce.date().max(new Date(), { message: "Date cannot be in the future" }),
+  date: z.coerce.date().refine((d) => d.getTime() <= Date.now(), {
+    message: "Date cannot be in the future",
+  }),
   note: z.string().max(200).optional(),
+});
+
+export const updateTransactionSchema = createTransactionSchema.extend({
+  id: z.string().min(1),
+});
+
+export const deleteTransactionSchema = z.object({
+  id: z.string().min(1),
 });
 
 export const upsertBudgetSchema = z.object({

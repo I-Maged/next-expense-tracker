@@ -1,10 +1,12 @@
 import { Pencil, Trash2 } from "lucide-react";
 
-import type { MockTransaction } from "@/lib/mockTransactions";
+import type { TransactionView } from "@/components/transactions/types";
 import { formatCurrency } from "@/lib/utils";
 
 type Props = {
-  transactions: Array<MockTransaction>;
+  transactions: Array<TransactionView>;
+  onEdit?: (transaction: TransactionView) => void;
+  onDelete?: (transaction: TransactionView) => void;
 };
 
 const HEADERS = [
@@ -16,7 +18,7 @@ const HEADERS = [
   "Actions",
 ] as const;
 
-export function TransactionsTable({ transactions }: Props) {
+export function TransactionsTable({ transactions, onEdit, onDelete }: Props) {
   return (
     <div className="card overflow-x-auto p-0">
       <table
@@ -93,6 +95,9 @@ export function TransactionsTable({ transactions }: Props) {
                     type="button"
                     aria-label={`Edit transaction ${transaction.id}`}
                     className="rounded-md p-2 text-text-secondary transition-colors hover:bg-surface-secondary hover:text-text-primary"
+                    onClick={() => {
+                      onEdit?.(transaction);
+                    }}
                   >
                     <Pencil aria-hidden="true" className="h-4 w-4" />
                   </button>
@@ -100,6 +105,9 @@ export function TransactionsTable({ transactions }: Props) {
                     type="button"
                     aria-label={`Delete transaction ${transaction.id}`}
                     className="rounded-md p-2 text-text-secondary transition-colors hover:bg-surface-secondary hover:text-error"
+                    onClick={() => {
+                      onDelete?.(transaction);
+                    }}
                   >
                     <Trash2 aria-hidden="true" className="h-4 w-4" />
                   </button>

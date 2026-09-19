@@ -7,8 +7,8 @@ Update this file after every completed feature. Any AI agent reading this should
 ## Current Status
 
 **Phase:** Phase 2 — Transactions (Core)
-**Last completed:** 04 Transactions Page — Full UI
-**Next:** 05 Transaction CRUD Logic
+**Last completed:** 05 Transaction CRUD Logic
+**Next:** 06 Settings Page — Categories
 
 ---
 
@@ -24,7 +24,7 @@ Update this file after every completed feature. Any AI agent reading this should
 ### Phase 2 — Transactions (Core)
 
 - [x] 04 Transactions Page — Full UI (TDD, 18 new tests): `app/transactions/page.tsx` (server session guard → /login), `components/transactions/` (TransactionFilters, TransactionsTable, TransactionsPagination, TransactionsView client orchestrator), `components/layout/` (AppNavbar authenticated variant + SignOutButton), `lib/mockTransactions.ts` (48 deterministic rows). Filters + pagination functional over mock client-side; empty + no-results states; Add/Edit/Delete buttons dead until 05.
-- [ ] 05 Transaction CRUD Logic
+- [x] 05 Transaction CRUD Logic (TDD, 25 new tests, 88 total): `actions/transactions.ts` (create/update/delete — session + zod + category-ownership + user-scoped Prisma, revalidate `/transactions` + `/dashboard`), `actions/categories.ts` (`seedDefaultCategories` — 8 defaults only when zero), `components/ui/dialog.tsx` (hand-rolled, no radix), `components/transactions/` (TransactionForm reused create/edit, DeleteTransactionDialog, types.ts view types; Table/Filters on real types; View URL-driven via `router.push` + `router.refresh()`), `app/transactions/page.tsx` (searchParams → Prisma count+findMany 20/page, month defaults to current, Decimal/Date mapping at boundary). `lib/validations.ts` (+ coerce amount, update/delete schemas, dynamic future-date check).
 - [ ] 06 Settings Page — Categories
 
 ### Phase 3 — Budgets
@@ -74,6 +74,11 @@ Update this file after every completed feature. Any AI agent reading this should
 
 - 2026-09-18: 04 month filter defaults to all months (""), not current month — so the full 48-row mock set shows on first paint and "Showing 1 to 20 of 48" holds. 05 wires the picker to real Prisma queries defaulting to the current month.
 - 2026-09-18: 04 `TransactionsView` client orchestrator holds filter + pagination `useState` (URL params deferred to 05); page stays a Server Component with the session guard, mock arrays cross the server/client boundary as plain data.
+- 2026-09-19: 05 filters are server URL params (`?search=&category=&type=&month=&page=`) — page awaits `searchParams`, Prisma `count` + `findMany` (user-scoped, month `gte/lt`, note `contains insensitive`, 20/page via `take/skip`); View pushes query on change (defaults deleted, page reset) and `router.refresh()` after mutations. Month defaults to current month (04's all-months default retired with mocks).
+- 2026-09-19: 05 dialog is hand-rolled (`components/ui/dialog.tsx`, overlay + `.card` panel, Escape/backdrop close) — no `@radix-ui/react-dialog` dep per code-standards simpler-native rule.
+- 2026-09-19: 05 `TransactionForm` is one component for create + edit (`initial` prop, Expense default, `inputMode="decimal"`, date `max` today, note max 200); remount via `key` (no setState-in-effect) for fresh state per open. Delete is a separate confirm dialog.
+- 2026-09-19: 05 category seeding lives in `actions/categories.ts` `seedDefaultCategories()` (8 names from `DEFAULT_CATEGORIES` + mock palette colors, `count==0` guard), triggered on transactions page load before reads.
+- 2026-09-19: 05 `createTransactionSchema.amount` is `z.coerce.number()` (forms send strings) + new `updateTransactionSchema` (create + `id`) and `deleteTransactionSchema`; future-date check is dynamic (`getTime() <= Date.now()`), not module-load `new Date()`. Empty-string notes normalize to `undefined` in actions.
 
 _Add decisions here as they are made during implementation._
 
