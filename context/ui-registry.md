@@ -172,3 +172,28 @@ After building any component — update this file with the component name, file 
 ### Transaction view types — `components/transactions/types.ts`
 
 - `CategoryView { id, name, color }`, `TransactionView { id, date: YYYY-MM-DD, note, type, amount: number, categoryId, category }` — server maps Prisma `Decimal`/`DateTime`/nullable note to this before passing to client
+
+### Settings page — `app/settings/page.tsx`
+
+- Server guard: `auth.api.getSession()` → `redirect("/login")` when null; `AppNavbar activePath="/settings"` + `userEmail`
+- Calls `seedDefaultCategories()` before reads; `prisma.category.findMany` scoped by `userId` (`orderBy name asc`, `include _count transactions`); maps to `CategoryWithCount` at boundary
+- `main`: `mx-auto flex w-full max-w-360 flex-col gap-6 px-8 py-8`; renders `CategoryManager`
+
+### CategoryManager — `components/settings/CategoryManager.tsx`
+
+- `"use client"` shell: `categories: CategoryWithCount[]` prop; owns header row (H1 "Settings" + "Manage your categories." + Add `Button` with `Plus`) + `CategoryForm` (`key` by editing id or `"new"`/`"form-closed"`) + `DeleteCategoryDialog` (`key` by deleting id); success calls `router.refresh()`
+- List: `.card p-0` + `ul data-testid="category-list"`; rows `flex items-center justify-between gap-4 border-b border-border px-4 py-3 last:border-0`; dot 8px via inline `backgroundColor` + name `truncate text-sm font-medium text-text-primary` + count `text-xs text-text-muted` ("N transaction(s)" / "No transactions"); ghost icon buttons (`Pencil`/`Trash2` `h-4 w-4`, `rounded-md p-2`, edit hover `text-text-primary`, delete hover `text-error`), `aria-label="Edit|Delete category <id>"`
+- Empty: `.card` centered `text-sm font-medium text-text-muted` "No categories yet — add your first category" + primary CTA opening the form
+
+### CategoryForm — `components/settings/CategoryForm.tsx`
+
+- `"use client"` dialog form: `open/onClose/initial/onSuccess` props; `Name` (`category-name`, placeholder "e.g. Groceries", `maxLength` 40, `autoFocus`), color swatches `role="radiogroup"` (`CATEGORY_COLORS` 8 dots, `h-6 w-6 rounded-full`, inline `backgroundColor`, `role="radio"` + `aria-checked`, selected `ring-2 ring-accent ring-offset-2 ring-offset-surface` else `border border-border`)
+- Client checks (name non-empty after trim, max 40, color in palette) then `createCategory` or `updateCategory({id})` with trimmed name; errors `text-sm text-error` with `role="alert"`; submit pending "Saving…" / "Save changes" vs "Add category"; Cancel secondary
+
+### DeleteCategoryDialog — `components/settings/DeleteCategoryDialog.tsx`
+
+- `"use client"` confirm: `open/onClose/category/onSuccess` props; summary `"Delete "<name>" (N transactions)? This cannot be undone.` (count line omitted when 0); danger `Delete` (pending "Deleting…") calls `deleteCategory({id})`; blocked/server errors `role="alert"`; Cancel secondary
+
+### Settings view types — `components/settings/types.ts`
+
+- `CategoryWithCount { id, name, color, transactionCount }` — server maps Prisma `_count.transactions` to this before passing to client

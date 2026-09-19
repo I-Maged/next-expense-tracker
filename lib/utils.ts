@@ -8,9 +8,10 @@ export const CURRENCY = "USD";
 export const TRANSACTIONS_PER_PAGE = 20;
 
 export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: CURRENCY }).format(
-    value,
-  );
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: CURRENCY,
+  }).format(value);
 }
 
 export function monthKey(date: Date): string {
@@ -26,4 +27,15 @@ export const DEFAULT_CATEGORIES = [
   "Health",
   "Entertainment",
   "Other",
+] as const;
+
+export const CATEGORY_COLORS = [
+  "#EF4444",
+  "#2B7FFF",
+  "#7C5CFC",
+  "#00BC7D",
+  "#EC4899",
+  "#10B981",
+  "#F59E0B",
+  "#6A7282",
 ] as const;

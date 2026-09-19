@@ -7,8 +7,8 @@ Update this file after every completed feature. Any AI agent reading this should
 ## Current Status
 
 **Phase:** Phase 2 — Transactions (Core)
-**Last completed:** 05 Transaction CRUD Logic
-**Next:** 06 Settings Page — Categories
+**Last completed:** 06 Settings Page — Categories
+**Next:** 07 Budgets Page — Full UI
 
 ---
 
@@ -25,7 +25,7 @@ Update this file after every completed feature. Any AI agent reading this should
 
 - [x] 04 Transactions Page — Full UI (TDD, 18 new tests): `app/transactions/page.tsx` (server session guard → /login), `components/transactions/` (TransactionFilters, TransactionsTable, TransactionsPagination, TransactionsView client orchestrator), `components/layout/` (AppNavbar authenticated variant + SignOutButton), `lib/mockTransactions.ts` (48 deterministic rows). Filters + pagination functional over mock client-side; empty + no-results states; Add/Edit/Delete buttons dead until 05.
 - [x] 05 Transaction CRUD Logic (TDD, 25 new tests, 88 total): `actions/transactions.ts` (create/update/delete — session + zod + category-ownership + user-scoped Prisma, revalidate `/transactions` + `/dashboard`), `actions/categories.ts` (`seedDefaultCategories` — 8 defaults only when zero), `components/ui/dialog.tsx` (hand-rolled, no radix), `components/transactions/` (TransactionForm reused create/edit, DeleteTransactionDialog, types.ts view types; Table/Filters on real types; View URL-driven via `router.push` + `router.refresh()`), `app/transactions/page.tsx` (searchParams → Prisma count+findMany 20/page, month defaults to current, Decimal/Date mapping at boundary). `lib/validations.ts` (+ coerce amount, update/delete schemas, dynamic future-date check).
-- [ ] 06 Settings Page — Categories
+- [x] 06 Settings Page — Categories (TDD, 36 new tests, 124 total): `actions/categories.ts` (+ `createCategory` / `updateCategory` / `deleteCategory` — session + zod + duplicate pre-check + `P2002` friendly error + transaction/budget block counts, revalidate `/settings` + `/transactions` + `/dashboard` + `/budgets`), `components/settings/` (`CategoryForm` shared add/edit with swatches, `DeleteCategoryDialog`, `CategoryManager` shell with `key` remount + `router.refresh()`, `types.ts` view type), `app/settings/page.tsx` (session guard, seed, `findMany` with `_count` ordered by name). `lib/validations.ts` (+ create/update/delete category schemas), `lib/utils.ts` (+ `CATEGORY_COLORS` 8-swatch palette).
 
 ### Phase 3 — Budgets
 
@@ -79,6 +79,7 @@ Update this file after every completed feature. Any AI agent reading this should
 - 2026-09-19: 05 `TransactionForm` is one component for create + edit (`initial` prop, Expense default, `inputMode="decimal"`, date `max` today, note max 200); remount via `key` (no setState-in-effect) for fresh state per open. Delete is a separate confirm dialog.
 - 2026-09-19: 05 category seeding lives in `actions/categories.ts` `seedDefaultCategories()` (8 names from `DEFAULT_CATEGORIES` + mock palette colors, `count==0` guard), triggered on transactions page load before reads.
 - 2026-09-19: 05 `createTransactionSchema.amount` is `z.coerce.number()` (forms send strings) + new `updateTransactionSchema` (create + `id`) and `deleteTransactionSchema`; future-date check is dynamic (`getTime() <= Date.now()`), not module-load `new Date()`. Empty-string notes normalize to `undefined` in actions.
+- 2026-09-19: 06 category actions are create/update/delete (update covers rename + recolor) with one shared `CategoryForm`; swatches-only palette (`CATEGORY_COLORS`, 8 seed colors, no free hex); page follows 05 pattern (server guard + seed + `_count` read, client manager + dialogs + `router.refresh()`); components split like 05 (`CategoryManager` + `CategoryForm` + `DeleteCategoryDialog` + `types.ts`); revalidate `/settings` + `/transactions` + `/dashboard` + `/budgets`; delete blocked when transactions or budgets reference (counts in message); `P2002` maps to "Category name already exists".
 
 _Add decisions here as they are made during implementation._
 

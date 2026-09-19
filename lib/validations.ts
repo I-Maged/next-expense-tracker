@@ -34,3 +34,13 @@ export const categorySchema = z.object({
   name: z.string().trim().min(1).max(40),
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Use #RRGGBB"),
 });
+
+export const createCategorySchema = categorySchema;
+
+export const updateCategorySchema = categorySchema.extend({
+  id: z.string().min(1),
+});
+
+export const deleteCategorySchema = z.object({
+  id: z.string().min(1),
+});
