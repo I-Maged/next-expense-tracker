@@ -21,6 +21,7 @@ After building any component — update this file with the component name, file 
 ### Navbar — `components/layout/Navbar.tsx`
 
 - `ctaHref` prop (default `/signup`) — homepage passes `/dashboard` when authenticated
+- Right-side actions: `flex items-center gap-3` with `ThemeToggle` + Get Started CTA
 
 - Header: `w-full border-b border-border bg-surface`
 - Inner: `mx-auto flex h-16 w-full max-w-[1440px] items-center justify-between px-6`
@@ -117,11 +118,17 @@ After building any component — update this file with the component name, file 
 - Same header shell as Navbar: `w-full border-b border-border bg-surface`, inner `mx-auto flex h-16 w-full max-w-360 items-center justify-between gap-4 px-6`, same logo mark/text
 - Nav links: active `text-sm font-medium leading-5 text-accent` + `aria-current="page"`; inactive `text-sm font-medium leading-5 text-text-dark hover:text-accent`
 - Mobile nav (`data-testid="app-navbar-mobile-nav"`, `md:hidden`): same 4 links in `overflow-x-auto` scroll row (`whitespace-nowrap shrink-0`), identical active/inactive tokens + `aria-current`
-- Right side: email `hidden text-sm font-medium text-text-secondary sm:block` + `SignOutButton`
+- Right side: email `hidden text-sm font-medium text-text-secondary sm:block` + `ThemeToggle` + `SignOutButton` (toggle visible at all breakpoints, incl. mobile)
 
 ### SignOutButton — `components/layout/SignOutButton.tsx`
 
 - `"use client"`; secondary `Button` "Sign out" → `authClient.signOut()` then `router.push("/")`; failures logged with `[SignOutButton]` prefix, still redirect
+
+### ThemeToggle — `components/layout/ThemeToggle.tsx`
+
+- `"use client"`; secondary `Button` with `h-11 w-11 p-0` icon override (44px hit-target), lucide `Moon` in light / `Sun` in dark, `aria-pressed` + `aria-label` ("Switch to dark/light mode")
+- Reads `THEME_STORAGE_KEY` (`lib/theme.ts`) then OS `prefers-color-scheme` on mount; flips `.light`/`.dark` on `<html>` + persists; SSR-safe (initial `"light"`, syncs in `useEffect`)
+- Used in `Navbar` + `AppNavbar` action groups; pre-paint script (`THEME_INIT_SCRIPT` in `app/layout.tsx`) prevents flash
 
 ### Transactions page — `app/transactions/page.tsx`
 

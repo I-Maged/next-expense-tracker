@@ -38,6 +38,17 @@ describe("AppNavbar", () => {
     ).toBeInTheDocument();
   });
 
+  it("renders a theme switch button next to sign out", () => {
+    render(<AppNavbar activePath="/dashboard" />);
+
+    expect(
+      screen.getByRole("button", { name: /switch to dark mode/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /sign out/i }),
+    ).toBeInTheDocument();
+  });
+
   it("renders a scrollable mobile nav so links stay reachable below md", () => {
     render(<AppNavbar activePath="/budgets" />);
 

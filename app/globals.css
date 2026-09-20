@@ -133,9 +133,10 @@
   }
 }
 
-/* Automatic dark mode from OS preference. Same values as .dark above. */
+/* Automatic dark mode from OS preference. Same values as .dark above.
+   Scoped off .light so an explicit light choice always wins. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     color-scheme: dark;
     --color-background: #0e1320;
     --color-surface: #161c2c;
@@ -165,6 +166,39 @@
     --color-info-foreground: #8ab4ff;
     --color-info-muted: #7d8db4;
   }
+}
+
+/* Explicit light theme — mirrors the @theme light values above.
+   Placed after the OS-preference block so it wins on equal specificity. */
+.light {
+  color-scheme: light;
+  --color-background: #f6f7fb;
+  --color-surface: #ffffff;
+  --color-surface-secondary: #f9fafb;
+  --color-surface-tertiary: #f2f5f7;
+  --color-surface-muted: #f4f5fb;
+  --color-border: #e7eaf3;
+  --color-border-light: #e5e7eb;
+  --color-border-muted: #dfe1e7;
+  --color-text-primary: #101828;
+  --color-text-secondary: #6a7282;
+  --color-text-muted: #99a1af;
+  --color-text-dark: #364153;
+  --color-text-darker: #36394a;
+  --color-text-darkest: #111827;
+  --color-text-black: #131316;
+  --color-text-slate: #272835;
+  --color-text-slate-medium: #666d80;
+  --color-accent-light: #f3e8ff;
+  --color-accent-muted: #faf5ff;
+  --color-success-light: #d0fae5;
+  --color-success-lightest: #ecfdf5;
+  --color-success-foreground: #007a55;
+  --color-success-darker: #009966;
+  --color-info-light: #dbeafe;
+  --color-info-lightest: #eff6ff;
+  --color-info-foreground: #155dfc;
+  --color-info-muted: #94a2c5;
 }
 
 @layer components {

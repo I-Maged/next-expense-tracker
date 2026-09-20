@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { SignOutButton } from "@/components/layout/SignOutButton";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 const NAV_LINKS = [
   { label: "Dashboard", href: "/dashboard" },
@@ -57,6 +58,7 @@ export function AppNavbar({ activePath, userEmail }: Props) {
               {userEmail}
             </span>
           ) : null}
+          <ThemeToggle />
           <SignOutButton />
         </div>
       </div>

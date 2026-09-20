@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
+
 type Props = {
   ctaHref?: string;
 };
@@ -40,12 +42,15 @@ export function Navbar({ ctaHref = "/signup" }: Props) {
             </Link>
           ))}
         </nav>
-        <Link
-          href={ctaHref}
-          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition-colors hover:bg-accent-dark"
-        >
-          Get Started
-        </Link>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <Link
+            href={ctaHref}
+            className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition-colors hover:bg-accent-dark"
+          >
+            Get Started
+          </Link>
+        </div>
       </div>
     </header>
   );

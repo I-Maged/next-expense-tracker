@@ -39,4 +39,12 @@ describe("Navbar", () => {
       "/dashboard",
     );
   });
+
+  it("renders a theme switch button", () => {
+    render(<Navbar />);
+
+    expect(
+      screen.getByRole("button", { name: /switch to dark mode/i }),
+    ).toBeInTheDocument();
+  });
 });

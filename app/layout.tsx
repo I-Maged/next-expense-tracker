@@ -1,5 +1,6 @@
 import { Google_Sans_Flex } from "next/font/google";
 
+import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
 const googleSansFlex = Google_Sans_Flex({
@@ -15,8 +16,15 @@ const googleSansFlex = Google_Sans_Flex({
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${googleSansFlex.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+    <html
+      lang="en"
+      className={`${googleSansFlex.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
+      <body className="flex min-h-full flex-col">
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        {children}
+      </body>
     </html>
   );
 }
