@@ -1,15 +1,42 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import {
-  MOCK_BUDGET_VS_ACTUAL,
-  MOCK_CATEGORY_SPENDING,
-  MOCK_DASHBOARD_MONTH,
-  MOCK_INCOME_EXPENSE_TREND,
-} from "@/lib/mockDashboard";
 import { DashboardView } from "@/components/dashboard/DashboardView";
 
+const MONTH = "2026-09";
+
 const STATS = { spent: 2845.5, income: 5200, balance: 2354.5, overBudgetCount: 1 };
+
+const CATEGORY_SPENDING = [
+  { name: "Food", total: 320, color: "#EF4444" },
+  { name: "Shopping", total: 365.5, color: "#EC4899" },
+];
+
+const TREND = [
+  { month: "2026-04", income: 4800, expense: 2450 },
+  { month: "2026-05", income: 4950, expense: 2680 },
+  { month: "2026-06", income: 5100, expense: 2920 },
+  { month: "2026-07", income: 4900, expense: 2540 },
+  { month: "2026-08", income: 5050, expense: 3100 },
+  { month: "2026-09", income: 5200, expense: 2845.5 },
+];
+
+const BUDGET_ROWS = [
+  {
+    id: "bud_1",
+    categoryId: "cat_food",
+    category: { id: "cat_food", name: "Food", color: "#EF4444" },
+    limit: 500,
+    spent: 320,
+  },
+  {
+    id: "bud_2",
+    categoryId: "cat_shop",
+    category: { id: "cat_shop", name: "Shopping", color: "#EC4899" },
+    limit: 300,
+    spent: 365.5,
+  },
+];
 
 const RECENT = [
   {
@@ -28,11 +55,11 @@ describe("DashboardView", () => {
     render(
       <DashboardView
         stats={STATS}
-        categorySpending={MOCK_CATEGORY_SPENDING}
-        trend={MOCK_INCOME_EXPENSE_TREND}
-        budgetRows={MOCK_BUDGET_VS_ACTUAL}
+        categorySpending={CATEGORY_SPENDING}
+        trend={TREND}
+        budgetRows={BUDGET_ROWS}
         recent={RECENT}
-        month={MOCK_DASHBOARD_MONTH}
+        month={MONTH}
       />,
     );
 
@@ -54,7 +81,7 @@ describe("DashboardView", () => {
         trend={[]}
         budgetRows={[]}
         recent={[]}
-        month={MOCK_DASHBOARD_MONTH}
+        month={MONTH}
       />,
     );
 

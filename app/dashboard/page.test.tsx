@@ -9,6 +9,7 @@ const {
   mockFindBudgets,
   mockGroupBy,
   mockFindRecent,
+  mockFindCategories,
 } = vi.hoisted(() => ({
   mockGetSession: vi.fn(),
   redirectMock: vi.fn(),
@@ -17,6 +18,7 @@ const {
   mockFindBudgets: vi.fn(),
   mockGroupBy: vi.fn(),
   mockFindRecent: vi.fn(),
+  mockFindCategories: vi.fn(),
 }));
 
 vi.mock("next/headers", () => ({ headers: vi.fn(async () => new Headers()) }));
@@ -37,6 +39,7 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     transaction: { aggregate: mockAggregate, groupBy: mockGroupBy, findMany: mockFindRecent },
     budget: { findMany: mockFindBudgets },
+    category: { findMany: mockFindCategories },
   },
 }));
 
@@ -44,10 +47,25 @@ import DashboardPage from "@/app/dashboard/page";
 
 const CATEGORY = { id: "cat_food", name: "Food", color: "#EF4444" };
 
+const TREND_INCOME = [4800, 4950, 5100, 4900, 5050, 5200];
+const TREND_EXPENSE = [2450, 2680, 2920, 2540, 3100, 2845.5];
+
 function mockAuthenticatedReads(): void {
   mockAggregate
     .mockResolvedValueOnce({ _sum: { amount: { toNumber: () => 2845.5 } } })
     .mockResolvedValueOnce({ _sum: { amount: { toNumber: () => 5200 } } });
+  for (let index = 0; index < 6; index += 1) {
+    const expense = TREND_EXPENSE[index];
+    const income = TREND_INCOME[index];
+    mockAggregate
+      .mockResolvedValueOnce({ _sum: { amount: { toNumber: () => expense } } })
+      .mockResolvedValueOnce({ _sum: { amount: { toNumber: () => income } } });
+  }
+  mockFindCategories.mockResolvedValue([
+    { id: "cat_food", name: "Food", color: "#EF4444" },
+    { id: "cat_shop", name: "Shopping", color: "#EC4899" },
+    { id: "cat_other", name: "Other", color: "#6A7282" },
+  ]);
   mockFindBudgets.mockResolvedValue([
     {
       id: "bud_1",
@@ -92,7 +110,7 @@ function mockAuthenticatedReads(): void {
 
 describe("DashboardPage", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   it("redirects to login without a session", async () => {
@@ -163,12 +181,87 @@ describe("DashboardPage", () => {
     mockAggregate
       .mockResolvedValueOnce({ _sum: { amount: null } })
       .mockResolvedValueOnce({ _sum: { amount: null } });
+    for (let index = 0; index < 6; index += 1) {
+      mockAggregate
+        .mockResolvedValueOnce({ _sum: { amount: null } })
+        .mockResolvedValueOnce({ _sum: { amount: null } });
+    }
     mockFindBudgets.mockResolvedValue([]);
     mockGroupBy.mockResolvedValue([]);
+    mockFindCategories.mockResolvedValue([]);
     mockFindRecent.mockResolvedValue([]);
     render(await DashboardPage());
 
     expect(screen.getAllByText("$0.00")).toHaveLength(3);
     expect(screen.getByText(/no transactions yet/i)).toBeInTheDocument();
+  });
+
+  it("renders live budget rows with spent totals when authenticated", async () => {
+    mockGetSession.mockResolvedValue({
+      user: { id: "user_1", email: "ana@example.com" },
+    });
+    mockSeed.mockResolvedValue({ success: true });
+    mockAuthenticatedReads();
+    render(await DashboardPage());
+
+    expect(screen.getAllByText("Food").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("$320.00 / $500.00")).toBeInTheDocument();
+    expect(screen.getByText("$365.50 / $300.00")).toBeInTheDocument();
+    expect(screen.queryByText("Rent")).not.toBeInTheDocument();
+    expect(screen.getAllByTestId("budget-vs-actual-row")).toHaveLength(2);
+  });
+
+  it("queries categories and six-month trend aggregates scoped by user", async () => {
+    mockGetSession.mockResolvedValue({
+      user: { id: "user_1", email: "ana@example.com" },
+    });
+    mockSeed.mockResolvedValue({ success: true });
+    mockAuthenticatedReads();
+    render(await DashboardPage());
+
+    expect(mockFindCategories).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { userId: "user_1" } }),
+    );
+    expect(mockAggregate).toHaveBeenCalledTimes(14);
+    expect(mockGroupBy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ userId: "user_1", type: "EXPENSE" }),
+      }),
+    );
+    expect(mockFindBudgets).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: "user_1", month: expect.stringMatching(/^\d{4}-(0[1-9]|1[0-2])$/) },
+        orderBy: { category: { name: "asc" } },
+      }),
+    );
+    expect(screen.getByTestId("category-chart-bars")).toBeInTheDocument();
+    expect(screen.getByTestId("trend-chart-lines")).toBeInTheDocument();
+  });
+
+  it("shows per-chart empty states when charts have no data", async () => {
+    mockGetSession.mockResolvedValue({
+      user: { id: "user_1", email: "ana@example.com" },
+    });
+    mockSeed.mockResolvedValue({ success: true });
+    mockAggregate
+      .mockResolvedValueOnce({ _sum: { amount: null } })
+      .mockResolvedValueOnce({ _sum: { amount: null } });
+    for (let index = 0; index < 6; index += 1) {
+      mockAggregate
+        .mockResolvedValueOnce({ _sum: { amount: null } })
+        .mockResolvedValueOnce({ _sum: { amount: null } });
+    }
+    mockFindBudgets.mockResolvedValue([]);
+    mockGroupBy.mockResolvedValue([]);
+    mockFindCategories.mockResolvedValue([]);
+    mockFindRecent.mockResolvedValue([]);
+    render(await DashboardPage());
+
+    expect(screen.getByText(/no data this month/i)).toBeInTheDocument();
+    expect(screen.getByText(/no data yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/no budgets this month/i)).toBeInTheDocument();
+    expect(screen.queryByTestId("category-chart-bars")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("trend-chart-lines")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("budget-vs-actual-row")).not.toBeInTheDocument();
   });
 });

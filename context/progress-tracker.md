@@ -7,8 +7,8 @@ Update this file after every completed feature. Any AI agent reading this should
 ## Current Status
 
 **Phase:** Phase 4 — Dashboard + Reports
-**Last completed:** 10 Stats + Recent — Real Data
-**Next:** 11 Charts — Real Data (recharts)
+**Last completed:** 11 Charts — Real Data
+**Next:** 12 Responsive + Empty-State Pass
 
 ---
 
@@ -36,7 +36,7 @@ Update this file after every completed feature. Any AI agent reading this should
 
 - [x] 09 Dashboard Page — Full UI (TDD, 19 new tests, 188 total): `app/dashboard/page.tsx` (server session guard → /login, pure mocks, no Prisma/seeding — 07 precedent), `components/dashboard/` (`StatCards` server 4-card grid, `CategoryChart`/`TrendChart` client recharts fed mock arrays, `BudgetVsActual` progress list reusing `BudgetCard` bar pattern, `RecentTransactions` 5-row list reusing table pill/amount pattern, `DashboardView` server shell, `types.ts` view types), `lib/mockDashboard.ts` (deterministic stats + 8 categories + 6-month trend + 5 budget rows + 5 recent). Per-section empty states; charts stack basic, full responsive stays in 12.
 - [x] 10 Stats + Recent — Real Data (TDD, +2 page tests / −2 mock tests, 188 total): `app/dashboard/page.tsx` (seed + current-month `aggregate` EXPENSE/INCOME SUMs, budgets + `groupBy` spent for over-budget count, latest-5 `findMany` with category; `Decimal`/date mapping at boundary; charts + budget list stay mocked), `lib/mockDashboard.ts` trimmed to chart-only mocks (stats + recent exports and their tests deleted; `DashboardView.test` uses inline fixtures).
-- [ ] 11 Charts — Real Data (recharts)
+- [x] 11 Charts — Real Data (TDD, +3 page tests / −3 mock tests, 188 total): `app/dashboard/page.tsx` (same `Promise.all` + `category.findMany` + 12 trend `aggregate` SUMs over `shiftMonth(month, -5..0)` ranges; reuses `spentRows` groupBy map for over-budget count + `categorySpending` + `budgetRows`; `categorySpending` sorted total desc with live name/color, zero/orphan filtered; all-zero trend collapses to `[]` so the empty state renders; budgets `orderBy category name asc`; `Decimal` null→0 mapping at boundary; zero section-component prop changes), `lib/mockDashboard.ts` + test deleted entirely (`DashboardView.test` fully inline).
 
 ### Phase 5 — Polish
 
@@ -89,6 +89,7 @@ Update this file after every completed feature. Any AI agent reading this should
 - 2026-09-19: 09 dashboard UI-only over `lib/mockDashboard.ts` (deterministic, `MOCK_DASHBOARD_MONTH` = current month so first paint always has data); real recharts components now (`CategoryChart` bars `#7C5CFC`, `TrendChart` lines `#10B981`/`#7C5CFC`, `ResponsiveContainer` + dashed `#E7EAF3` grid + 12px `#9CA3AF` ticks) so 11 is a data-swap; `BudgetVsActual` reuses `BudgetCard` bar thresholds without edit/delete; `RecentTransactions` reuses table pill/amount pattern with "View all" → `/transactions`; page has guard only, no seeding (07 precedent — 10 adds Prisma).
 
 - 2026-09-19: 10 Balance = current-month income minus current-month spent (not all-time — matches the "This Month" card subtitles); recent = latest 5 (not 8 — matches the 09 UI, zero component changes); `mockDashboard.ts` trimmed to chart-only mocks (stats + recent exports deleted, unlike the 08 keep-unwired precedent); zero `DashboardView`/section prop changes — view shapes already fit real data.
+- 2026-09-19: 11 trend = 12 `aggregate` SUMs (6 months × EXPENSE/INCOME) inside the existing `Promise.all` — no raw SQL, matches the 10 pattern; `categorySpending` reuses the over-budget `groupBy` map + one `category.findMany` (zero extra aggregates), sorted total desc, zero/orphan rows dropped; all-zero 6-month trend collapses to `[]` so `TrendChart` shows its empty state instead of a flat zero line; budget rows `orderBy category name asc` (budgets-page parity); `mockDashboard.ts` + test deleted outright per build plan.
 
 _Add decisions here as they are made during implementation._
 
