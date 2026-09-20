@@ -7,7 +7,12 @@ describe("StatCards", () => {
   it("renders all four stats with formatted values", () => {
     render(
       <StatCards
-        stats={{ spent: 2845.5, income: 5200, balance: 2354.5, overBudgetCount: 2 }}
+        stats={{
+          spent: 2845.5,
+          income: 5200,
+          balance: 2354.5,
+          overBudgetCount: 2,
+        }}
       />,
     );
 
@@ -24,10 +29,28 @@ describe("StatCards", () => {
 
   it("renders zero values without crashing", () => {
     render(
-      <StatCards stats={{ spent: 0, income: 0, balance: 0, overBudgetCount: 0 }} />,
+      <StatCards
+        stats={{ spent: 0, income: 0, balance: 0, overBudgetCount: 0 }}
+      />,
     );
 
     expect(screen.getAllByText("$0.00")).toHaveLength(3);
     expect(screen.getByText("0")).toBeInTheDocument();
+  });
+
+  it("highlights the over-budget count in red only when above zero", () => {
+    const { rerender } = render(
+      <StatCards
+        stats={{ spent: 100, income: 200, balance: 100, overBudgetCount: 2 }}
+      />,
+    );
+    expect(screen.getByText("2")).toHaveClass("text-error");
+
+    rerender(
+      <StatCards
+        stats={{ spent: 100, income: 200, balance: 100, overBudgetCount: 0 }}
+      />,
+    );
+    expect(screen.getByText("0")).not.toHaveClass("text-error");
   });
 });

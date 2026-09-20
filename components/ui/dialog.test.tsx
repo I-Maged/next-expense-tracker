@@ -41,4 +41,18 @@ describe("Dialog", () => {
     fireEvent.mouseDown(screen.getByTestId("dialog-overlay"));
     expect(onClose).toHaveBeenCalledTimes(2);
   });
+
+  it("constrains panel height so dialogs stay full-width yet scrollable on short screens", () => {
+    render(
+      <Dialog open onClose={() => {}} title="Add transaction">
+        <p>dialog body</p>
+      </Dialog>,
+    );
+
+    const panel = screen.getByRole("dialog", { name: "Add transaction" });
+    expect(panel).toHaveClass("w-full");
+    expect(panel).toHaveClass("max-w-md");
+    expect(panel.className).toContain("max-h-");
+    expect(panel).toHaveClass("overflow-y-auto");
+  });
 });

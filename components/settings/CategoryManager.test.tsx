@@ -50,6 +50,15 @@ describe("CategoryManager", () => {
     expect(screen.getByText("No transactions")).toBeInTheDocument();
   });
 
+  it("stacks the header on narrow screens so the CTA never squeezes", () => {
+    renderManager();
+
+    const heading = screen.getByRole("heading", { name: "Settings" });
+    const headerRow = heading.closest("div")?.parentElement as HTMLElement;
+    expect(headerRow.className).toContain("flex-col");
+    expect(headerRow.className).toContain("sm:flex-row");
+  });
+
   it("shows the empty state when there are no categories", () => {
     render(<CategoryManager categories={[]} />);
 

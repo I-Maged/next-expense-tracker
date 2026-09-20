@@ -60,6 +60,31 @@ export function AppNavbar({ activePath, userEmail }: Props) {
           <SignOutButton />
         </div>
       </div>
+      <nav
+        aria-label="Mobile"
+        data-testid="app-navbar-mobile-nav"
+        className="border-t border-border md:hidden"
+      >
+        <div className="mx-auto flex w-full max-w-360 items-center gap-6 overflow-x-auto px-6 py-2">
+          {NAV_LINKS.map((link) => {
+            const isActive = link.href === activePath;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={isActive ? "page" : undefined}
+                className={
+                  isActive
+                    ? "shrink-0 whitespace-nowrap text-sm font-medium leading-5 text-accent"
+                    : "shrink-0 whitespace-nowrap text-sm font-medium leading-5 text-text-dark transition-colors hover:text-accent"
+                }
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
     </header>
   );
 }

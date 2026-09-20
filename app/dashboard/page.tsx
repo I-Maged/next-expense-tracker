@@ -142,10 +142,11 @@ export default async function DashboardPage() {
       income: trendSums[index * 2 + 1]._sum.amount?.toNumber() ?? 0,
     }),
   );
-  const trend: Array<MonthlyTrendView> =
-    fullTrend.every((row) => row.income === 0 && row.expense === 0)
-      ? []
-      : fullTrend;
+  const trend: Array<MonthlyTrendView> = fullTrend.every(
+    (row) => row.income === 0 && row.expense === 0,
+  )
+    ? []
+    : fullTrend;
 
   const budgetActualRows: Array<BudgetActualView> = budgetRows.map((row) => ({
     id: row.id,
@@ -176,7 +177,7 @@ export default async function DashboardPage() {
   return (
     <div className="flex min-h-full flex-col">
       <AppNavbar activePath="/dashboard" userEmail={session.user.email} />
-      <main className="mx-auto flex w-full max-w-360 flex-col gap-6 px-8 py-8">
+      <main className="mx-auto flex w-full max-w-360 flex-col gap-6 px-4 py-6 sm:px-6 md:px-8 md:py-8">
         <DashboardView
           stats={{
             spent,

@@ -37,7 +37,11 @@ vi.mock("@/lib/auth-client", () => ({
 vi.mock("@/actions/categories", () => ({ seedDefaultCategories: mockSeed }));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    transaction: { aggregate: mockAggregate, groupBy: mockGroupBy, findMany: mockFindRecent },
+    transaction: {
+      aggregate: mockAggregate,
+      groupBy: mockGroupBy,
+      findMany: mockFindRecent,
+    },
     budget: { findMany: mockFindBudgets },
     category: { findMany: mockFindCategories },
   },
@@ -161,7 +165,10 @@ describe("DashboardPage", () => {
     );
     expect(mockFindBudgets).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { userId: "user_1", month: expect.stringMatching(/^\d{4}-(0[1-9]|1[0-2])$/) },
+        where: {
+          userId: "user_1",
+          month: expect.stringMatching(/^\d{4}-(0[1-9]|1[0-2])$/),
+        },
       }),
     );
     expect(mockFindRecent).toHaveBeenCalledWith(
@@ -230,7 +237,10 @@ describe("DashboardPage", () => {
     );
     expect(mockFindBudgets).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { userId: "user_1", month: expect.stringMatching(/^\d{4}-(0[1-9]|1[0-2])$/) },
+        where: {
+          userId: "user_1",
+          month: expect.stringMatching(/^\d{4}-(0[1-9]|1[0-2])$/),
+        },
         orderBy: { category: { name: "asc" } },
       }),
     );
@@ -262,6 +272,22 @@ describe("DashboardPage", () => {
     expect(screen.getByText(/no budgets this month/i)).toBeInTheDocument();
     expect(screen.queryByTestId("category-chart-bars")).not.toBeInTheDocument();
     expect(screen.queryByTestId("trend-chart-lines")).not.toBeInTheDocument();
-    expect(screen.queryByTestId("budget-vs-actual-row")).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("budget-vs-actual-row"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("uses responsive page gutters so mobile keeps content width", async () => {
+    mockGetSession.mockResolvedValue({
+      user: { id: "user_1", email: "ana@example.com" },
+    });
+    mockSeed.mockResolvedValue({ success: true });
+    mockAuthenticatedReads();
+    render(await DashboardPage());
+
+    const main = screen.getByRole("main");
+    expect(main.className).toContain("px-4");
+    expect(main.className).toContain("sm:px-6");
+    expect(main.className).toContain("md:px-8");
   });
 });

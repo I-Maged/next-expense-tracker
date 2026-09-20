@@ -38,7 +38,10 @@ export function Dialog({ open, onClose, title, children, className }: Props) {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={cn("card w-full max-w-md", className)}
+        className={cn(
+          "card max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto",
+          className,
+        )}
       >
         <h2 className="text-base font-semibold leading-6 text-text-primary">
           {title}

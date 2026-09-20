@@ -1,37 +1,43 @@
-# Memory — 11 Charts — Real Data
+# Memory — 12 Responsive + Empty-State Pass
 
-Last updated: 2026-09-19
+Last updated: 2026-09-20
 
 ## What was built
 
-- `app/dashboard/page.tsx` (rewritten): same `Promise.all` extended — existing 5 reads + `category.findMany` (user-scoped, name asc) + 12 trend `aggregate` SUMs (6 months via `shiftMonth(month, -5..0)` ranges, EXPENSE then INCOME per month); reuses `spentRows` groupBy map for over-budget count + `categorySpending` + `budgetRows`; `categorySpending` mapped with live name/color, zero/orphan filtered, sorted total desc; all-zero 6-month trend collapses to `[]` so the empty state renders; budgets `orderBy category name asc`; `Decimal` null→0 mapping at boundary; zero section-component prop changes.
-- `app/dashboard/page.test.tsx` (4→7 tests): live budget rows (`$320.00 / $500.00`, 2 rows, no Rent); category + 6-month trend scoping (`category.findMany` userId, 14 aggregates, `orderBy category name asc`, bars/lines testids); per-chart empty states on null sums; `beforeEach` switched `clearAllMocks`→`resetAllMocks`.
-- Deleted `lib/mockDashboard.ts` + `lib/mockDashboard.test.ts` entirely per build plan.
-- `components/dashboard/DashboardView.test.tsx`: all mock imports replaced with inline `CATEGORY_SPENDING` / `TREND` / `BUDGET_ROWS` fixtures.
-- Docs: `context/progress-tracker.md` (11 checked, Phase 4 complete, 1 new decision line), `context/ui-registry.md` (dashboard page entry rewritten for fully-live reads).
+- 4× `app/*/page.tsx` mains (`dashboard`, `transactions`, `budgets`, `settings`): `px-8 py-8` → `px-4 py-6 sm:px-6 md:px-8 md:py-8`.
+- `components/layout/AppNavbar.tsx`: added mobile scroll row (`data-testid="app-navbar-mobile-nav"`, `md:hidden`, inner `overflow-x-auto`, same 4 links with identical active/inactive tokens + `aria-current`).
+- `components/transactions/TransactionsTable.tsx`: table `w-full` → `w-full min-w-[640px]` (wrapper already `overflow-x-auto`).
+- `components/ui/dialog.tsx`: panel `card w-full max-w-md` → `card max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto` via `cn()`.
+- `components/transactions/TransactionsView.tsx` + `components/settings/CategoryManager.tsx`: headers `flex items-center justify-between` → `flex-col items-start sm:flex-row sm:items-center sm:justify-between`.
+- Tests (+7, 188→195): `dialog.test` (max-h/scroll), `TransactionsTable.test` (min-w/scroll), `AppNavbar.test` (mobile row + updated active-link test to `getAllByRole`), `TransactionsView.test` + `CategoryManager.test` (header stacking), `app/dashboard/page.test` (responsive gutters), `StatCards.test` (over-budget `text-error` only when >0).
+- Empty states (all 9, verified not redesigned): CategoryChart, TrendChart, BudgetVsActual, RecentTransactions, TransactionsView empty + no-results, BudgetsView empty, CategoryManager empty, dashboard per-chart empties.
+- Currency + over-budget verified: all live amounts via `formatCurrency()`; over-budget stays red text/bar only (`StatCards` count, `BudgetCard`/`BudgetVsActual` bar + `+$X over`).
+- Docs: `context/ui-registry.md` (7 entries: navbar, 4 mains, table, view/manager headers, dialog), `context/progress-tracker.md` (12 checked, Phase 5, next → 13, 1 decision line).
 
 ## Decisions made
 
-- Trend = 12 `aggregate` SUMs inside the existing `Promise.all` (not raw SQL or findMany+bucket — matches the 10 pattern, type-safe).
-- Category spending reuses the over-budget `groupBy` map + one `category.findMany` (zero extra aggregates); sorted total desc for deterministic bar order.
-- All-zero trend maps to `[]` (otherwise `TrendChart` would draw a flat zero line instead of its empty state).
-- Budget rows ordered by category name asc (budgets-page parity).
-- Skills used: architect (plan + blueprint, 4 answers confirmed), tdd (RED 3-fail → GREEN), review (1 minor unplanned-sort note, ready to ship).
+- Class-only pass, zero component prop/API and zero server/client boundary changes.
+- Gutters `px-4 py-6 sm:px-6 md:px-8 md:py-8` (32px eats ~17% of a 375px phone).
+- Mobile nav = `md:hidden overflow-x-auto` scroll row — ui-rules forbids sidebar/drawer, so this is the only fitting pattern.
+- Table scroll forced with `min-w-[640px]`; dialog safety with `max-h-[calc(100vh-2rem)] overflow-y-auto`; headers copy the `BudgetsView` stacking pattern.
+- Charts/stat/budget grids unchanged (already stack correctly).
+- Skills used: architect (blueprint, 3 answers: responsive px, add scroll row, TDD+verify), tdd (vertical RED→GREEN slices), tailwind-v4 + tailwind-responsive-design (breakpoint classes), review (ready to ship, 1 minor note).
 
 ## Problems solved
 
-- Test pollution: queuing 14 aggregates while old code consumed 2 left `mockResolvedValueOnce` leftovers across tests (`clearAllMocks` does not clear the once-queue) — fixed by switching `beforeEach` to `vi.resetAllMocks()`.
-- `getByText("Food")` matched twice (budget row + recent category pill) — switched to `getAllByText` length check plus unique `$320.00 / $500.00` assertion.
+- New mobile nav duplicated desktop links, breaking the old `getByRole("Transactions")` (multiple elements) — updated active-link test to `getAllByRole` asserting both copies.
+- Mobile-nav test asserted `overflow-x-auto` on the `nav` itself but the scroll container is the inner div — fixed test to check `firstElementChild`.
 
 ## Current state
 
-- `npm test`: 188/188 passing (47 files: +3 page, −3 mock, net 0). `typecheck`, `lint`, `npm run build` clean. Build shows `ƒ /dashboard` (dynamic, correct).
-- Phase 4 complete: 11 done — dashboard fully live, zero mocks remain. Everything implemented and verified but uncommitted.
+- `npm test`: 195/195 passing (47 files). `typecheck`, `lint`, `npm run build` clean. Routes `ƒ /dashboard /transactions /budgets /settings` (dynamic, correct).
+- Phase 5: 12 done — responsive verified, zero visual redesign. Everything implemented and verified but uncommitted (18 files: 9 source + 7 tests + 2 docs).
+- Review: 1 minor note only (duplicate links in DOM, one `display:none` per breakpoint — accepted as-is pending developer call).
 
 ## Next session starts with
 
-- Build 12 Responsive + Empty-State Pass per `context/build-plan.md`: stat cards stack on mobile, charts stack, table scrolls, dialogs full-width; verify every empty state renders; currency via `formatCurrency()` everywhere; over-budget states unmissable but not noisy.
+- Build 13 Auth Edge Cases + Seed Check per `context/build-plan.md`: new user gets exactly 8 default categories once; logged-out → `/login`, logged-in `/login`+`/signup` → `/dashboard`; invalid inputs (negative amount, >2 decimals, future date, bad month) rejected with friendly text.
 
 ## Open questions
 
-- None. 12 scope is fully specified in the build plan.
+- None. 13 scope is fully specified in the build plan.

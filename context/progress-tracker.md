@@ -6,9 +6,9 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ## Current Status
 
-**Phase:** Phase 4 — Dashboard + Reports
-**Last completed:** 11 Charts — Real Data
-**Next:** 12 Responsive + Empty-State Pass
+**Phase:** Phase 5 — Polish
+**Last completed:** 12 Responsive + Empty-State Pass
+**Next:** 13 Auth Edge Cases + Seed Check
 
 ---
 
@@ -40,7 +40,7 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ### Phase 5 — Polish
 
-- [ ] 12 Responsive + Empty-State Pass
+- [x] 12 Responsive + Empty-State Pass (TDD, +7 tests, 195 total): 4× `page.tsx` mains `px-8 py-8` → `px-4 py-6 sm:px-6 md:px-8 md:py-8`; `AppNavbar` mobile scroll row (`md:hidden overflow-x-auto`, same tokens); `TransactionsTable` `min-w-[640px]`; `Dialog` panel `max-h-[calc(100vh-2rem)] overflow-y-auto`; `TransactionsView`/`CategoryManager` headers stack (`flex-col sm:flex-row`); 9 empty states + `formatCurrency()` + over-budget `text-error`/`bg-error` verified, zero visual redesign.
 - [ ] 13 Auth Edge Cases + Seed Check
 
 ---
@@ -90,6 +90,7 @@ Update this file after every completed feature. Any AI agent reading this should
 
 - 2026-09-19: 10 Balance = current-month income minus current-month spent (not all-time — matches the "This Month" card subtitles); recent = latest 5 (not 8 — matches the 09 UI, zero component changes); `mockDashboard.ts` trimmed to chart-only mocks (stats + recent exports deleted, unlike the 08 keep-unwired precedent); zero `DashboardView`/section prop changes — view shapes already fit real data.
 - 2026-09-19: 11 trend = 12 `aggregate` SUMs (6 months × EXPENSE/INCOME) inside the existing `Promise.all` — no raw SQL, matches the 10 pattern; `categorySpending` reuses the over-budget `groupBy` map + one `category.findMany` (zero extra aggregates), sorted total desc, zero/orphan rows dropped; all-zero 6-month trend collapses to `[]` so `TrendChart` shows its empty state instead of a flat zero line; budget rows `orderBy category name asc` (budgets-page parity); `mockDashboard.ts` + test deleted outright per build plan.
+- 2026-09-20: 12 responsive = class-only pass, no prop/API changes; page gutters `px-4 py-6 sm:px-6 md:px-8 md:py-8`; mobile nav is a `md:hidden overflow-x-auto` scroll row (ui-rules forbids sidebar/drawer); table scroll forced via `min-w-[640px]`; dialog safe via `max-h-[calc(100vh-2rem)] overflow-y-auto`; headers stack via `flex-col sm:flex-row` (BudgetsView pattern); over-budget stays red text/bar only.
 
 _Add decisions here as they are made during implementation._
 

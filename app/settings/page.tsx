@@ -30,7 +30,7 @@ export default async function SettingsPage() {
   return (
     <div className="flex min-h-full flex-col">
       <AppNavbar activePath="/settings" userEmail={session.user.email} />
-      <main className="mx-auto flex w-full max-w-360 flex-col gap-6 px-8 py-8">
+      <main className="mx-auto flex w-full max-w-360 flex-col gap-6 px-4 py-6 sm:px-6 md:px-8 md:py-8">
         <CategoryManager categories={categories} />
       </main>
     </div>

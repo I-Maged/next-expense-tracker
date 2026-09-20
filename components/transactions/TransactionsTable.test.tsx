@@ -49,4 +49,16 @@ describe("TransactionsTable", () => {
     expect(screen.getAllByRole("button", { name: /edit/i })).toHaveLength(2);
     expect(screen.getAllByRole("button", { name: /delete/i })).toHaveLength(2);
   });
+
+  it("forces horizontal scroll on narrow screens instead of squeezing columns", () => {
+    const { container } = render(
+      <TransactionsTable transactions={MOCK_TRANSACTIONS.slice(0, 2)} />,
+    );
+
+    const wrapper = container.firstChild as HTMLElement;
+    expect(wrapper.className).toContain("overflow-x-auto");
+
+    const table = screen.getByTestId("transactions-table");
+    expect(table.className).toContain("min-w-");
+  });
 });

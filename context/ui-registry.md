@@ -116,6 +116,7 @@ After building any component — update this file with the component name, file 
 - `activePath` prop (e.g. `/transactions`) + optional `userEmail`
 - Same header shell as Navbar: `w-full border-b border-border bg-surface`, inner `mx-auto flex h-16 w-full max-w-360 items-center justify-between gap-4 px-6`, same logo mark/text
 - Nav links: active `text-sm font-medium leading-5 text-accent` + `aria-current="page"`; inactive `text-sm font-medium leading-5 text-text-dark hover:text-accent`
+- Mobile nav (`data-testid="app-navbar-mobile-nav"`, `md:hidden`): same 4 links in `overflow-x-auto` scroll row (`whitespace-nowrap shrink-0`), identical active/inactive tokens + `aria-current`
 - Right side: email `hidden text-sm font-medium text-text-secondary sm:block` + `SignOutButton`
 
 ### SignOutButton — `components/layout/SignOutButton.tsx`
@@ -127,7 +128,7 @@ After building any component — update this file with the component name, file 
 - Server guard: `auth.api.getSession()` → `redirect("/login")` when null; `AppNavbar activePath="/transactions"` + `userEmail`
 - Calls `seedDefaultCategories()` before reads (8 defaults only when zero)
 - Reads `searchParams` (`search/category/type/month/page`), defaults month to `monthKey(new Date())`, page to 1; Prisma `count` + `findMany` scoped by `userId` (month range `gte/lt`, category, type, note `contains insensitive`, `orderBy date desc`, `take/skip` 20); `Decimal.toNumber()` + `YYYY-MM-DD` mapping at boundary
-- `main`: `mx-auto flex w-full max-w-360 flex-col gap-6 px-8 py-8`; renders `TransactionsView` with paged `TransactionView` rows + `CategoryView` list + pagination numbers
+- `main`: `mx-auto flex w-full max-w-360 flex-col gap-6 px-4 py-6 sm:px-6 md:px-8 md:py-8`; renders `TransactionsView` with paged `TransactionView` rows + `CategoryView` list + pagination numbers
 
 ### TransactionFilters — `components/transactions/TransactionFilters.tsx`
 
@@ -136,7 +137,7 @@ After building any component — update this file with the component name, file 
 
 ### TransactionsTable — `components/transactions/TransactionsTable.tsx`
 
-- Server presentational, `transactions: TransactionView[]` prop + optional `onEdit`/`onDelete` row callbacks (05: wired to dialogs; buttons still render without callbacks) wrapper `card overflow-x-auto p-0`, `table w-full border-collapse text-left` + `data-testid="transactions-table"`
+- Server presentational, `transactions: TransactionView[]` prop + optional `onEdit`/`onDelete` row callbacks (05: wired to dialogs; buttons still render without callbacks) wrapper `card overflow-x-auto p-0`, `table w-full min-w-[640px] border-collapse text-left` + `data-testid="transactions-table"` (12: `min-w` forces scroll instead of squeezing on mobile)
 - Headers: `px-4 py-3 text-xs font-medium uppercase tracking-wide text-text-secondary`, Amount/Actions `text-right`
 - Rows `border-b border-border last:border-0 hover:bg-surface-secondary`; date `whitespace-nowrap tabular-nums`; empty note renders muted "—"
 - Category pill `inline-flex items-center gap-2 rounded-full bg-surface-secondary px-2 py-0.5 text-xs font-medium text-text-secondary` + 8px dot via inline `backgroundColor`
@@ -152,13 +153,13 @@ After building any component — update this file with the component name, file 
 ### TransactionsView — `components/transactions/TransactionsView.tsx`
 
 - `"use client"` URL-driven shell: server-provided `transactions/categories/total/page/totalPages/start/end/search/categoryId/typeFilter/month` props; filter changes `router.push` new query (defaults deleted, `page` reset), pagination sets `?page=` (deleted when 1)
-- Owns header row (H1 + Add `Button` with `Plus`) + `TransactionForm` (`key` by editing id or `"new"`/`"closed"`) + `DeleteTransactionDialog` (`key` by deleting id); success calls `router.refresh()`
+- Owns header row (H1 + Add `Button` with `Plus`, `flex-col items-start sm:flex-row sm:items-center sm:justify-between` so the CTA never squeezes on mobile) + `TransactionForm` (`key` by editing id or `"new"`/`"closed"`) + `DeleteTransactionDialog` (`key` by deleting id); success calls `router.refresh()`
 - Empty (`total=0`, no active filters): `.card` centered `text-sm font-medium text-text-muted` "No transactions yet — add your first transaction" + primary CTA opening the form
 - No-results (`total=0` with search/category/type active): same shell, "No transactions match these filters." + secondary "Clear filters" (keeps month, drops rest)
 
 ### Dialog — `components/ui/dialog.tsx`
 
-- `"use client"` hand-rolled (no radix dep): `open/onClose/title/children` props, `null` when closed; overlay `fixed inset-0 z-50 flex items-center justify-center bg-overlay/60 p-4` (`data-testid="dialog-overlay"`, backdrop-click close), panel `.card w-full max-w-md` with `role="dialog" aria-modal` + H2 `text-base font-semibold leading-6 text-text-primary`; Escape closes via `keydown` listener
+- `"use client"` hand-rolled (no radix dep): `open/onClose/title/children` props, `null` when closed; overlay `fixed inset-0 z-50 flex items-center justify-center bg-overlay/60 p-4` (`data-testid="dialog-overlay"`, backdrop-click close), panel `.card w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto` (12: never clips on short screens) with `role="dialog" aria-modal` + H2 `text-base font-semibold leading-6 text-text-primary`; Escape closes via `keydown` listener
 
 ### TransactionForm — `components/transactions/TransactionForm.tsx`
 
@@ -177,11 +178,11 @@ After building any component — update this file with the component name, file 
 
 - Server guard: `auth.api.getSession()` → `redirect("/login")` when null; `AppNavbar activePath="/settings"` + `userEmail`
 - Calls `seedDefaultCategories()` before reads; `prisma.category.findMany` scoped by `userId` (`orderBy name asc`, `include _count transactions`); maps to `CategoryWithCount` at boundary
-- `main`: `mx-auto flex w-full max-w-360 flex-col gap-6 px-8 py-8`; renders `CategoryManager`
+- `main`: `mx-auto flex w-full max-w-360 flex-col gap-6 px-4 py-6 sm:px-6 md:px-8 md:py-8`; renders `CategoryManager`
 
 ### CategoryManager — `components/settings/CategoryManager.tsx`
 
-- `"use client"` shell: `categories: CategoryWithCount[]` prop; owns header row (H1 "Settings" + "Manage your categories." + Add `Button` with `Plus`) + `CategoryForm` (`key` by editing id or `"new"`/`"form-closed"`) + `DeleteCategoryDialog` (`key` by deleting id); success calls `router.refresh()`
+- `"use client"` shell: `categories: CategoryWithCount[]` prop; owns header row (H1 "Settings" + "Manage your categories." + Add `Button` with `Plus`, `flex-col items-start sm:flex-row sm:items-center sm:justify-between`) + `CategoryForm` (`key` by editing id or `"new"`/`"form-closed"`) + `DeleteCategoryDialog` (`key` by deleting id); success calls `router.refresh()`
 - List: `.card p-0` + `ul data-testid="category-list"`; rows `flex items-center justify-between gap-4 border-b border-border px-4 py-3 last:border-0`; dot 8px via inline `backgroundColor` + name `truncate text-sm font-medium text-text-primary` + count `text-xs text-text-muted` ("N transaction(s)" / "No transactions"); ghost icon buttons (`Pencil`/`Trash2` `h-4 w-4`, `rounded-md p-2`, edit hover `text-text-primary`, delete hover `text-error`), `aria-label="Edit|Delete category <id>"`
 - Empty: `.card` centered `text-sm font-medium text-text-muted` "No categories yet — add your first category" + primary CTA opening the form
 
@@ -202,7 +203,7 @@ After building any component — update this file with the component name, file 
 
 - Server guard: `auth.api.getSession()` → `redirect("/login")` when null; `AppNavbar activePath="/budgets"` + `userEmail`
 - Calls `seedDefaultCategories()` before reads; reads `searchParams` (`month`, defaults to `monthKey(new Date())`); Prisma `category.findMany` (user-scoped, `orderBy name asc`) + `budget.findMany` (user + month, `include category`) + `transaction.groupBy` (`by categoryId`, EXPENSE in month `gte/lt`, `_sum amount`); `Decimal.toNumber()` + `_sum` null→0 mapping at boundary
-- `main`: `mx-auto flex w-full max-w-360 flex-col gap-6 px-8 py-8`; renders `BudgetsView` with `BudgetView` rows + `BudgetCategoryView` list + month
+- `main`: `mx-auto flex w-full max-w-360 flex-col gap-6 px-4 py-6 sm:px-6 md:px-8 md:py-8`; renders `BudgetsView` with `BudgetView` rows + `BudgetCategoryView` list + month
 
 ### BudgetsView — `components/budgets/BudgetsView.tsx`
 
@@ -238,7 +239,7 @@ After building any component — update this file with the component name, file 
 - Calls `seedDefaultCategories()` before reads; month = `monthKey(new Date())` with local `monthRange()` (same shape as budgets/transactions pages)
 - One `Promise.all`: EXPENSE + INCOME `aggregate` SUMs in month range, `budget.findMany` (user + month, `include category`) + EXPENSE `groupBy` spent per category for the over-budget count, `transaction.findMany` (`orderBy date desc`, `take 5`, `include category`); `Decimal.toNumber()` + `Date→YYYY-MM-DD` + null-note→`""` mapping at boundary
 - Passes live `stats` + `recent` + `categorySpending` + `trend` + `budgetRows` into `DashboardView`; `categorySpending` sorted total desc with live name/color, all-zero trend collapses to `[]` for the empty state, budgets ordered by category name asc; no `mockDashboard` dependency (deleted in 11)
-- `main`: `mx-auto flex w-full max-w-360 flex-col gap-6 px-8 py-8`
+- `main`: `mx-auto flex w-full max-w-360 flex-col gap-6 px-4 py-6 sm:px-6 md:px-8 md:py-8` (12: responsive gutters)
 
 ### DashboardView — `components/dashboard/DashboardView.tsx`
 

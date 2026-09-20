@@ -90,6 +90,15 @@ describe("TransactionsView", () => {
     expect(screen.getByText("Showing 1 to 2 of 2")).toBeInTheDocument();
   });
 
+  it("stacks the header on narrow screens so the CTA never squeezes", () => {
+    renderView();
+
+    const heading = screen.getByRole("heading", { name: "Transactions" });
+    const headerRow = heading.closest("div")?.parentElement as HTMLElement;
+    expect(headerRow.className).toContain("flex-col");
+    expect(headerRow.className).toContain("sm:flex-row");
+  });
+
   it("pushes a URL query when search changes", () => {
     renderView();
 

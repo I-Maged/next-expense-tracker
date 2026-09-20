@@ -23,7 +23,7 @@ export function TransactionsTable({ transactions, onEdit, onDelete }: Props) {
     <div className="card overflow-x-auto p-0">
       <table
         data-testid="transactions-table"
-        className="w-full border-collapse text-left"
+        className="w-full min-w-160 border-collapse text-left"
       >
         <thead>
           <tr className="border-b border-border">
