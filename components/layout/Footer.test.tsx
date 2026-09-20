@@ -19,14 +19,13 @@ describe("Footer", () => {
     );
   });
 
-  it("points account links at the dashboard when authenticated", () => {
+  it("hides the account group when authenticated", () => {
     render(<Footer authenticated />);
 
-    expect(screen.getByRole("link", { name: "Sign In" })).toHaveAttribute(
-      "href",
-      "/dashboard",
-    );
-    expect(screen.getByRole("link", { name: "Get Started" })).toHaveAttribute(
+    expect(screen.queryByRole("navigation", { name: "Account" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Sign In" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Get Started" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute(
       "href",
       "/dashboard",
     );

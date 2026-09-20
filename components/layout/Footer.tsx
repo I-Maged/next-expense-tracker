@@ -42,20 +42,22 @@ export function Footer({ authenticated = false }: Props) {
             </Link>
           ))}
         </nav>
-        <nav aria-label="Account" className="flex flex-col gap-2.5">
-          <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
-            Account
-          </p>
-          {ACCOUNT_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={authenticated ? "/dashboard" : link.href}
-              className="text-sm font-medium leading-5 text-text-dark transition-colors hover:text-accent"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+        {authenticated ? null : (
+          <nav aria-label="Account" className="flex flex-col gap-2.5">
+            <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
+              Account
+            </p>
+            {ACCOUNT_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-sm font-medium leading-5 text-text-dark transition-colors hover:text-accent"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        )}
       </div>
       <div className="border-t border-border">
         <p className="mx-auto w-full max-w-360 px-6 py-4 text-xs leading-4 text-text-muted">

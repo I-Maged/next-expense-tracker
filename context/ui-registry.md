@@ -20,7 +20,7 @@ After building any component — update this file with the component name, file 
 
 ### Navbar — `components/layout/Navbar.tsx`
 
-- `ctaHref` prop (default `/signup`) — homepage passes `/dashboard` when authenticated
+- `ctaHref` prop (default `/signup`) + `ctaLabel` prop (default `"Get Started"`) — homepage passes `/dashboard` + `"Go to Dashboard"` when authenticated
 - Right-side actions: `flex items-center gap-3` with `ThemeToggle` + Get Started CTA
 
 - Header: `w-full border-b border-border bg-surface`
@@ -32,7 +32,9 @@ After building any component — update this file with the component name, file 
 
 ### Hero — `components/homepage/Hero.tsx`
 
-- `authenticated` prop (default `false`) — both CTAs point at `/dashboard` when true
+- `authenticated` prop (default `false`) + optional `summary: HeroSummary | null` (types in `components/homepage/types.ts`: `{ spent, income, top: [{ name, total, color }] }`, plain numbers mapped at the server boundary)
+- Logged-out: headline "Know where your money goes", "Get Started" → `/signup` + "Sign In" → `/login`, static mock preview (`$1,284.50`, 3 tone bars)
+- Authenticated: headline "Welcome back" + month subtitle, "Go to Dashboard" → `/dashboard` + "View Transactions" → `/transactions`, live preview (`formatCurrency()` totals, top-3 bars with category color via inline `backgroundColor` + width % of max, empty "No expenses this month yet" when no data)
 
 - Section: `mx-auto flex w-full max-w-[1440px] flex-col items-center px-8 pt-16 pb-12 text-center md:pt-24`
 - H1: `max-w-2xl text-4xl font-bold text-text-primary md:text-6xl`
@@ -61,7 +63,7 @@ After building any component — update this file with the component name, file 
 
 ### Footer — `components/layout/Footer.tsx`
 
-- `authenticated` prop (default `false`) — Account links (Sign In, Get Started) point at `/dashboard` when true
+- `authenticated` prop (default `false`) — Account group (Sign In, Get Started) renders for logged-out visitors only; hidden when authenticated (Product links cover app navigation)
 
 - `w-full border-t border-border bg-surface`; inner `mx-auto max-w-[1440px] px-6 py-10 md:flex-row`
 - Link groups: label `text-xs font-medium uppercase tracking-wide text-text-muted`, links `text-sm font-medium text-text-dark hover:text-accent`

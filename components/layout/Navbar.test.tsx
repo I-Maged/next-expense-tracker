@@ -40,6 +40,15 @@ describe("Navbar", () => {
     );
   });
 
+  it("renders a custom CTA label via ctaLabel", () => {
+    render(<Navbar ctaHref="/dashboard" ctaLabel="Go to Dashboard" />);
+
+    expect(
+      screen.getByRole("link", { name: "Go to Dashboard" }),
+    ).toHaveAttribute("href", "/dashboard");
+    expect(screen.queryByRole("link", { name: "Get Started" })).toBeNull();
+  });
+
   it("renders a theme switch button", () => {
     render(<Navbar />);
 
