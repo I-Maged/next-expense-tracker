@@ -121,6 +121,30 @@ describe("seedDefaultCategories", () => {
     });
     consoleSpy.mockRestore();
   });
+
+  it("treats a duplicate-seed race as success", async () => {
+    mockGetSession.mockResolvedValue({ user: { id: "user_1" } });
+    mockCount.mockResolvedValue(0);
+    mockCreateMany.mockRejectedValue({ code: "P2002" });
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const result = await seedDefaultCategories();
+
+    expect(result).toEqual({ success: true });
+    consoleSpy.mockRestore();
+  });
+
+  it("writes duplicate-safe seeds", async () => {
+    mockGetSession.mockResolvedValue({ user: { id: "user_1" } });
+    mockCount.mockResolvedValue(0);
+    mockCreateMany.mockResolvedValue({ count: 8 });
+
+    await seedDefaultCategories();
+
+    expect(mockCreateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ skipDuplicates: true }),
+    );
+  });
 });
 
 describe("createCategory", () => {

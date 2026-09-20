@@ -106,6 +106,22 @@ describe("createTransaction", () => {
     expect(mockTxCreate).not.toHaveBeenCalled();
   });
 
+  it("rejects extra decimals and future dates with friendly text", async () => {
+    mockGetSession.mockResolvedValue(SESSION);
+
+    expect(await createTransaction({ ...VALID, amount: 10.999 })).toEqual({
+      success: false,
+      error: "Invalid transaction data",
+    });
+    expect(
+      await createTransaction({
+        ...VALID,
+        date: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      }),
+    ).toEqual({ success: false, error: "Invalid transaction data" });
+    expect(mockTxCreate).not.toHaveBeenCalled();
+  });
+
   it("returns a friendly error when prisma throws", async () => {
     mockGetSession.mockResolvedValue(SESSION);
     mockCategoryFindFirst.mockResolvedValue({ id: "cat_1" });

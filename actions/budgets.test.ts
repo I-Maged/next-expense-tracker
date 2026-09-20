@@ -118,6 +118,16 @@ describe("upsertBudget", () => {
     expect(mockCreate).not.toHaveBeenCalled();
   });
 
+  it("rejects extra-decimal limits with friendly text", async () => {
+    mockGetSession.mockResolvedValue(SESSION);
+
+    expect(await upsertBudget({ ...VALID, limit: 10.999 })).toEqual({
+      success: false,
+      error: "Invalid budget data",
+    });
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
   it("recovers from a unique race by updating instead", async () => {
     mockGetSession.mockResolvedValue(SESSION);
     mockCategoryFindFirst.mockResolvedValue({ id: "cat_1" });

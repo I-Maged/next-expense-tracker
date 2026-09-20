@@ -1,9 +1,14 @@
+import { headers } from "next/headers";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { LoginForm } from "@/components/auth/LoginForm";
 import { SocialButtons } from "@/components/auth/SocialButtons";
+import { auth } from "@/lib/auth";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (session) redirect("/dashboard");
   return (
     <main className="mx-auto flex w-full max-w-xl flex-col px-8 py-16">
       <div className="card flex flex-col gap-6">

@@ -58,6 +58,31 @@ describe("createTransactionSchema", () => {
         .success,
     ).toBe(false);
   });
+
+  it("reports friendly messages for decimals and future dates", () => {
+    const base = {
+      type: "EXPENSE",
+      amount: 42.5,
+      categoryId: "cat_1",
+      date: new Date("2026-09-10"),
+    };
+
+    const decimals = createTransactionSchema.safeParse({
+      ...base,
+      amount: 10.999,
+    });
+    expect(decimals.success).toBe(false);
+    if (!decimals.success)
+      expect(decimals.error.issues[0]?.message).toMatch(/2 decimals/i);
+
+    const future = createTransactionSchema.safeParse({
+      ...base,
+      date: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    });
+    expect(future.success).toBe(false);
+    if (!future.success)
+      expect(future.error.issues[0]?.message).toMatch(/future/i);
+  });
 });
 
 describe("upsertBudgetSchema", () => {
@@ -107,6 +132,26 @@ describe("upsertBudgetSchema", () => {
         limit: "10.999",
       }).success,
     ).toBe(false);
+  });
+
+  it("reports friendly messages for bad months and decimals", () => {
+    const badMonth = upsertBudgetSchema.safeParse({
+      categoryId: "cat_1",
+      month: "Sep 2026",
+      limit: 500,
+    });
+    expect(badMonth.success).toBe(false);
+    if (!badMonth.success)
+      expect(badMonth.error.issues[0]?.message).toMatch(/YYYY-MM/);
+
+    const decimals = upsertBudgetSchema.safeParse({
+      categoryId: "cat_1",
+      month: "2026-09",
+      limit: "10.999",
+    });
+    expect(decimals.success).toBe(false);
+    if (!decimals.success)
+      expect(decimals.error.issues[0]?.message).toMatch(/2 decimals/i);
   });
 });
 

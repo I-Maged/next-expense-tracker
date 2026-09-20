@@ -72,9 +72,11 @@ export async function seedDefaultCategories(): Promise<ActionResult> {
         name,
         color: SEED_COLORS[name] ?? "#6A7282",
       })),
+      skipDuplicates: true,
     });
     return { success: true };
   } catch (error) {
+    if (isUniqueViolation(error)) return { success: true };
     console.error("[actions/categories]", error);
     return { success: false, error: "Failed to seed categories" };
   }

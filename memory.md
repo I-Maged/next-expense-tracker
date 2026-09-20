@@ -1,43 +1,41 @@
-# Memory — 12 Responsive + Empty-State Pass
+# Memory — 13 Auth Edge Cases + Seed Check
 
 Last updated: 2026-09-20
 
 ## What was built
 
-- 4× `app/*/page.tsx` mains (`dashboard`, `transactions`, `budgets`, `settings`): `px-8 py-8` → `px-4 py-6 sm:px-6 md:px-8 md:py-8`.
-- `components/layout/AppNavbar.tsx`: added mobile scroll row (`data-testid="app-navbar-mobile-nav"`, `md:hidden`, inner `overflow-x-auto`, same 4 links with identical active/inactive tokens + `aria-current`).
-- `components/transactions/TransactionsTable.tsx`: table `w-full` → `w-full min-w-[640px]` (wrapper already `overflow-x-auto`).
-- `components/ui/dialog.tsx`: panel `card w-full max-w-md` → `card max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto` via `cn()`.
-- `components/transactions/TransactionsView.tsx` + `components/settings/CategoryManager.tsx`: headers `flex items-center justify-between` → `flex-col items-start sm:flex-row sm:items-center sm:justify-between`.
-- Tests (+7, 188→195): `dialog.test` (max-h/scroll), `TransactionsTable.test` (min-w/scroll), `AppNavbar.test` (mobile row + updated active-link test to `getAllByRole`), `TransactionsView.test` + `CategoryManager.test` (header stacking), `app/dashboard/page.test` (responsive gutters), `StatCards.test` (over-budget `text-error` only when >0).
-- Empty states (all 9, verified not redesigned): CategoryChart, TrendChart, BudgetVsActual, RecentTransactions, TransactionsView empty + no-results, BudgetsView empty, CategoryManager empty, dashboard per-chart empties.
-- Currency + over-budget verified: all live amounts via `formatCurrency()`; over-budget stays red text/bar only (`StatCards` count, `BudgetCard`/`BudgetVsActual` bar + `+$X over`).
-- Docs: `context/ui-registry.md` (7 entries: navbar, 4 mains, table, view/manager headers, dialog), `context/progress-tracker.md` (12 checked, Phase 5, next → 13, 1 decision line).
+- New `proxy.test.ts` (15 tests): logged-out protected (`/dashboard`, `/transactions`, `/budgets`, `/settings`, nested `/settings/account`) → `/login`; logged-in `/login`+`/signup` → `/dashboard`; pass-through cases; `config.matcher` covers all 6 routes. Includes why-comment on minimal `NextRequest` stub.
+- `app/(auth)/login/page.tsx` + `app/(auth)/signup/page.tsx`: sync → `async`, `auth.api.getSession({ headers: await headers() })` → `redirect("/dashboard")` when session exists (defense-in-depth over `proxy.ts`, which is unchanged).
+- `app/(auth)/login/page.test.tsx` + `signup/page.test.tsx`: render-when-logged-out + redirect-when-logged-in (`REDIRECT:/dashboard` pattern from dashboard tests).
+- `actions/categories.ts` `seedDefaultCategories()`: `createMany` + `skipDuplicates: true`; `P2002` unique-race → `{ success: true }` (uses existing `isUniqueViolation`).
+- Tests (+8 seed/validation/action): `actions/categories.test.ts` (+2 race-as-success, duplicate-safe write), `lib/validations.test.ts` (+2 friendly messages: `Max 2 decimals`, future-date, `YYYY-MM`), `actions/transactions.test.ts` (+1 extra-decimals + future-date friendly reject), `actions/budgets.test.ts` (+1 extra-decimal limit friendly reject).
+- Tests total +23, 195→218 (47→48 files). No source change needed for invalid inputs — zod + generic friendly action errors already correct.
+- Docs: `context/progress-tracker.md` (13 checked, +23/218 line, +1 decision line).
+- Nit fix: `proxy.test.ts` assertion why-comment added; re-verified 15/15 + lint clean.
 
 ## Decisions made
 
-- Class-only pass, zero component prop/API and zero server/client boundary changes.
-- Gutters `px-4 py-6 sm:px-6 md:px-8 md:py-8` (32px eats ~17% of a 375px phone).
-- Mobile nav = `md:hidden overflow-x-auto` scroll row — ui-rules forbids sidebar/drawer, so this is the only fitting pattern.
-- Table scroll forced with `min-w-[640px]`; dialog safety with `max-h-[calc(100vh-2rem)] overflow-y-auto`; headers copy the `BudgetsView` stacking pattern.
-- Charts/stat/budget grids unchanged (already stack correctly).
-- Skills used: architect (blueprint, 3 answers: responsive px, add scroll row, TDD+verify), tdd (vertical RED→GREEN slices), tailwind-v4 + tailwind-responsive-design (breakpoint classes), review (ready to ship, 1 minor note).
+- Keep lazy `seedDefaultCategories()` on protected page load — no `databaseHooks` move (covers email + OAuth uniformly, zero migration risk).
+- Add server `getSession` guard on auth pages on top of `proxy.ts` (developer choice: defense-in-depth).
+- Verify + friendly-text only for invalid inputs — no new schemas (zod already rejects negative, >2 decimals, future date, bad month; actions keep generic friendly errors, no raw leak).
+- Skills used: architect (blueprint, 3 answers: keep lazy seed, add server guard, verify+friendly), tdd (vertical RED→GREEN slices), review (1 minor nit → fixed), remember (save).
 
 ## Problems solved
 
-- New mobile nav duplicated desktop links, breaking the old `getByRole("Transactions")` (multiple elements) — updated active-link test to `getAllByRole` asserting both copies.
-- Mobile-nav test asserted `overflow-x-auto` on the `nav` itself but the scroll container is the inner div — fixed test to check `firstElementChild`.
+- Auth page RED failed with `TypeError: expect() .rejects got object` — pages were still sync JSX; fixed by making both pages `async` server components.
+- Seed race RED (2 fail: `P2002` returned failure, missing `skipDuplicates`) — fixed with `skipDuplicates: true` + `P2002` → success.
+- `proxy.test.ts` nested-path mock used a query string in `pathname` — switched to `/settings/account` for a realistic nested prefix check.
 
 ## Current state
 
-- `npm test`: 195/195 passing (47 files). `typecheck`, `lint`, `npm run build` clean. Routes `ƒ /dashboard /transactions /budgets /settings` (dynamic, correct).
-- Phase 5: 12 done — responsive verified, zero visual redesign. Everything implemented and verified but uncommitted (18 files: 9 source + 7 tests + 2 docs).
-- Review: 1 minor note only (duplicate links in DOM, one `display:none` per breakpoint — accepted as-is pending developer call).
+- `npm test`: 218/218 passing (48 files). `typecheck`, `lint`, `npm run build` clean. Routes `ƒ / /login /signup /dashboard /transactions /budgets /settings /api/auth/[...all]` (dynamic, correct).
+- Phase 5 complete — all 13 features done. 13 changes implemented and verified but uncommitted (3 source + 7 test files with 1 new + 1 doc).
+- Review: 1 minor nit only (assertion why-comment) — fixed and re-verified this session.
 
 ## Next session starts with
 
-- Build 13 Auth Edge Cases + Seed Check per `context/build-plan.md`: new user gets exactly 8 default categories once; logged-out → `/login`, logged-in `/login`+`/signup` → `/dashboard`; invalid inputs (negative amount, >2 decimals, future date, bad month) rejected with friendly text.
+- Phase 5 is complete (13/13). Decide ship step: commit the uncommitted work and run one final `npm test` + `npm run build` on a clean tree.
 
 ## Open questions
 
-- None. 13 scope is fully specified in the build plan.
+- None. Commit/ship strategy is the only pending developer call.
