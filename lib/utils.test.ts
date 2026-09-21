@@ -5,6 +5,7 @@ import {
   TRANSACTIONS_PER_PAGE,
   cn,
   formatCurrency,
+  isMaxTwoDecimals,
   monthKey,
   shiftMonth,
 } from "@/lib/utils";
@@ -19,6 +20,22 @@ describe("formatCurrency", () => {
   it("formats USD with two decimals", () => {
     expect(formatCurrency(1234.5)).toBe("$1,234.50");
     expect(formatCurrency(0)).toBe("$0.00");
+  });
+});
+
+describe("isMaxTwoDecimals", () => {
+  it("accepts values with up to two decimals", () => {
+    expect(isMaxTwoDecimals(42)).toBe(true);
+    expect(isMaxTwoDecimals(42.5)).toBe(true);
+    expect(isMaxTwoDecimals(0.29)).toBe(true);
+    expect(isMaxTwoDecimals(1.1)).toBe(true);
+    expect(isMaxTwoDecimals(2.3)).toBe(true);
+    expect(isMaxTwoDecimals(150.05)).toBe(true);
+  });
+
+  it("rejects values with more than two decimals", () => {
+    expect(isMaxTwoDecimals(10.999)).toBe(false);
+    expect(isMaxTwoDecimals(1.005)).toBe(false);
   });
 });
 

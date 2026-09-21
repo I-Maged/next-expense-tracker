@@ -24,6 +24,24 @@ describe("createTransactionSchema", () => {
     expect(parsed.success).toBe(true);
   });
 
+  it("accepts common two-decimal amounts regardless of float representation", () => {
+    const base = {
+      type: "EXPENSE",
+      categoryId: "cat_1",
+      date: new Date("2026-09-10"),
+    };
+
+    expect(
+      createTransactionSchema.safeParse({ ...base, amount: 0.29 }).success,
+    ).toBe(true);
+    expect(
+      createTransactionSchema.safeParse({ ...base, amount: "1.10" }).success,
+    ).toBe(true);
+    expect(
+      createTransactionSchema.safeParse({ ...base, amount: "150.05" }).success,
+    ).toBe(true);
+  });
+
   it("rejects non-positive amounts, extra decimals, and future dates", () => {
     const base = {
       type: "EXPENSE",
@@ -50,7 +68,7 @@ describe("createTransactionSchema", () => {
     expect(
       createTransactionSchema.safeParse({
         ...base,
-        date: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        date: new Date(Date.now() + 48 * 60 * 60 * 1000),
       }).success,
     ).toBe(false);
     expect(
@@ -77,7 +95,7 @@ describe("createTransactionSchema", () => {
 
     const future = createTransactionSchema.safeParse({
       ...base,
-      date: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      date: new Date(Date.now() + 48 * 60 * 60 * 1000),
     });
     expect(future.success).toBe(false);
     if (!future.success)

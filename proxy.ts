@@ -8,10 +8,15 @@ const PROTECTED_PREFIXES = [
   "/settings",
 ] as const;
 
-const AUTH_PAGES = ["/login", "/signup"] as const;
+const AUTH_PAGES: Array<string> = ["/login", "/signup"];
+
+const SESSION_COOKIE = "better-auth.session_token";
+const SECURE_SESSION_COOKIE = "__Secure-better-auth.session_token";
 
 export function proxy(request: NextRequest) {
-  const hasSession = request.cookies.has("better-auth.session_token");
+  const hasSession =
+    request.cookies.has(SESSION_COOKIE) ||
+    request.cookies.has(SECURE_SESSION_COOKIE);
   const { pathname } = request.nextUrl;
 
   const isProtected = PROTECTED_PREFIXES.some((prefix) =>
@@ -21,10 +26,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  if (
-    (pathname === AUTH_PAGES[0] || pathname === AUTH_PAGES[1]) &&
-    hasSession
-  ) {
+  if (AUTH_PAGES.includes(pathname) && hasSession) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 

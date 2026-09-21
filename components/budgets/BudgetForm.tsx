@@ -11,6 +11,7 @@ import type {
   BudgetCategoryView,
   BudgetView,
 } from "@/components/budgets/types";
+import { isMaxTwoDecimals } from "@/lib/utils";
 
 type Props = {
   open: boolean;
@@ -53,7 +54,7 @@ export function BudgetForm({
       setFormError("Enter a limit greater than 0");
       return;
     }
-    if (Math.round(parsedLimit * 100) !== parsedLimit * 100) {
+    if (!isMaxTwoDecimals(parsedLimit)) {
       setFormError("Limit can have max 2 decimals");
       return;
     }

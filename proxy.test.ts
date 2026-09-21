@@ -3,10 +3,14 @@ import type { NextRequest } from "next/server";
 
 import { config, proxy } from "@/proxy";
 
-function makeRequest(pathname: string, hasSession: boolean): NextRequest {
+function makeRequest(
+  pathname: string,
+  hasSession: boolean,
+  cookieName = "better-auth.session_token",
+): NextRequest {
   return {
     cookies: {
-      has: (name: string) => name === "better-auth.session_token" && hasSession,
+      has: (name: string) => name === cookieName && hasSession,
     },
     nextUrl: { pathname },
     url: `http://localhost${pathname}`,
@@ -61,6 +65,36 @@ describe("proxy", () => {
       expect(locationOf(response)).toBeNull();
     },
   );
+
+  it.each(["/dashboard", "/transactions", "/budgets", "/settings"])(
+    "recognizes the secure session cookie on protected %s",
+    (pathname) => {
+      const response = proxy(
+        makeRequest(pathname, true, "__Secure-better-auth.session_token"),
+      );
+
+      expect(locationOf(response)).toBeNull();
+    },
+  );
+
+  it.each(["/login", "/signup"])(
+    "redirects %s to /dashboard with the secure session cookie",
+    (pathname) => {
+      const response = proxy(
+        makeRequest(pathname, true, "__Secure-better-auth.session_token"),
+      );
+
+      expect(locationOf(response)).toContain("/dashboard");
+    },
+  );
+
+  it("redirects logged-out protected paths with the secure cookie name to /login", () => {
+    const response = proxy(
+      makeRequest("/dashboard", false, "__Secure-better-auth.session_token"),
+    );
+
+    expect(locationOf(response)).toContain("/login");
+  });
 
   it("covers protected and auth routes in matcher", () => {
     expect(config.matcher).toEqual(

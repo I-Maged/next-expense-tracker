@@ -17,11 +17,9 @@ import { monthKey, shiftMonth } from "@/lib/utils";
 function monthRange(month: string): { start: Date; end: Date } {
   const year = Number(month.slice(0, 4));
   const monthIndex = Number(month.slice(5, 7)) - 1;
-  const start = new Date(year, monthIndex, 1);
+  const start = new Date(Date.UTC(year, monthIndex, 1));
   const end = new Date(
-    monthIndex === 11 ? year + 1 : year,
-    (monthIndex + 1) % 12,
-    1,
+    Date.UTC(monthIndex === 11 ? year + 1 : year, (monthIndex + 1) % 12, 1),
   );
   return { start, end };
 }

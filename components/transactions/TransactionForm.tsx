@@ -11,6 +11,7 @@ import type {
   CategoryView,
   TransactionView,
 } from "@/components/transactions/types";
+import { isMaxTwoDecimals } from "@/lib/utils";
 
 type Props = {
   open: boolean;
@@ -60,7 +61,7 @@ export function TransactionForm({
       setFormError("Enter an amount greater than 0");
       return;
     }
-    if (Math.round(parsedAmount * 100) !== parsedAmount * 100) {
+    if (!isMaxTwoDecimals(parsedAmount)) {
       setFormError("Amount can have max 2 decimals");
       return;
     }

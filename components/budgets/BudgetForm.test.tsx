@@ -99,6 +99,21 @@ describe("BudgetForm", () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
+  it("accepts two-decimal limits like 150.05 without a decimals error", async () => {
+    mockUpsert.mockResolvedValue({ success: true });
+    renderCreate();
+
+    fireEvent.change(screen.getByLabelText(/monthly limit/i), {
+      target: { value: "150.05" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Set budget" }));
+
+    await waitFor(() => {
+      expect(mockUpsert).toHaveBeenCalledOnce();
+    });
+    expect(screen.queryByText(/max 2 decimals/i)).not.toBeInTheDocument();
+  });
+
   it("shows server errors without closing", async () => {
     mockUpsert.mockResolvedValue({
       success: false,

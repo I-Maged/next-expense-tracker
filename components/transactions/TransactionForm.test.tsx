@@ -92,6 +92,21 @@ describe("TransactionForm", () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
+  it("accepts two-decimal amounts like 1.10 without a decimals error", async () => {
+    mockCreate.mockResolvedValue({ success: true });
+    renderCreate();
+
+    fireEvent.change(screen.getByLabelText(/amount/i), {
+      target: { value: "1.10" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Add transaction" }));
+
+    await waitFor(() => {
+      expect(mockCreate).toHaveBeenCalledOnce();
+    });
+    expect(screen.queryByText(/max 2 decimals/i)).not.toBeInTheDocument();
+  });
+
   it("shows server errors without closing", async () => {
     mockCreate.mockResolvedValue({
       success: false,

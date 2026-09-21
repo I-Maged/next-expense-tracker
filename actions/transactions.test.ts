@@ -116,7 +116,7 @@ describe("createTransaction", () => {
     expect(
       await createTransaction({
         ...VALID,
-        date: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        date: new Date(Date.now() + 48 * 60 * 60 * 1000),
       }),
     ).toEqual({ success: false, error: "Invalid transaction data" });
     expect(mockTxCreate).not.toHaveBeenCalled();

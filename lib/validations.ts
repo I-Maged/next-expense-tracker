@@ -1,18 +1,24 @@
 import { z } from "zod";
 
+import { isMaxTwoDecimals } from "@/lib/utils";
+
+const MAX_FUTURE_OFFSET_MS = 24 * 60 * 60 * 1000;
+
 export const createTransactionSchema = z.object({
   type: z.enum(["INCOME", "EXPENSE"]),
   amount: z.coerce
     .number()
     .positive()
     .max(999999999.99)
-    .refine((n) => Math.round(n * 100) === n * 100, {
+    .refine(isMaxTwoDecimals, {
       message: "Max 2 decimals",
     }),
   categoryId: z.string().min(1),
-  date: z.coerce.date().refine((d) => d.getTime() <= Date.now(), {
-    message: "Date cannot be in the future",
-  }),
+  date: z.coerce
+    .date()
+    .refine((d) => d.getTime() <= Date.now() + MAX_FUTURE_OFFSET_MS, {
+      message: "Date cannot be in the future",
+    }),
   note: z.string().max(200).optional(),
 });
 
@@ -31,7 +37,7 @@ export const upsertBudgetSchema = z.object({
     .number()
     .positive()
     .max(999999999.99)
-    .refine((n) => Math.round(n * 100) === n * 100, {
+    .refine(isMaxTwoDecimals, {
       message: "Max 2 decimals",
     }),
 });
